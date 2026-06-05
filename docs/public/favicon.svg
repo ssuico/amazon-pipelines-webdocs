@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Amazon Pipelines">
+  <rect width="32" height="32" rx="6" fill="#3c8772"/>
+  <circle cx="8" cy="16" r="2.75" fill="#fff"/>
+  <circle cx="16" cy="16" r="2.75" fill="#fff"/>
+  <circle cx="24" cy="16" r="2.75" fill="#fff"/>
+  <path d="M11.2 15.2h2.1l2.1-2.1v5.8l-2.1-2.1h-2.1z" fill="#fff"/>
+  <path d="M19.2 15.2h2.1l2.1-2.1v5.8l-2.1-2.1h-2.1z" fill="#fff"/>
+</svg>
