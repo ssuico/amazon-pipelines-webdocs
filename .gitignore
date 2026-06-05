@@ -1,0 +1,12 @@
+# VitePress / Node
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# Local env (if added later)
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db

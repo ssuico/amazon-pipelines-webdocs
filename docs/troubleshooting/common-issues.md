@@ -1,0 +1,60 @@
+# Common Issues
+
+Consolidated troubleshooting guide for the most frequent Amazon Pipelines problems.
+
+## Setup and credentials
+
+| Problem | Solution |
+|---------|----------|
+| Unknown account | Check `.env` has credentials — see [Credentials](/onboarding/credentials) |
+| Brand not in `/accounts` list | Verify refresh token env var is set and brand is wired in `config.py` |
+| SP-API 401 Unauthorized | Verify client_id/secret match the app that issued the refresh token |
+| Research-app brand auth fails | Confirm brand is in `RESEARCH_APP_BRANDS` and Research-app creds are set |
+| Ads 401 / profile error | Verify `{BRAND}_US_PROFILE` matches `/v2/profiles` response |
+| Token refresh failed | Re-authorize in Seller Central / Advertising Console |
+| Import errors | `pip install -r requirements.txt` |
+
+## Pipeline execution
+
+| Problem | Solution |
+|---------|----------|
+| Task dispatched but no data | Check worker logs; query `/report-status/failed` |
+| SP report stuck IN_PROGRESS | Check Cloud Run logs; SP poll timeout is ~1700 s |
+| Ads report stuck RUNNING | `POST /ads/reports/expire-stuck` then retry |
+| Empty report / no_data | Verify date range has data; check marketplace |
+| Duplicate processing skipped | Expected idempotency behavior — check status for `skipped` |
+| MERGE failed | Verify merge columns exist in DataFrame and schema |
+| 429 throttling | Queue backoff handles this; increase spacing if persistent |
+
+## BigQuery
+
+| Problem | Solution |
+|---------|----------|
+| Table not found | First upsert creates table automatically; check dataset name |
+| Permission denied | Verify SA has `bigquery.dataEditor` and `bigquery.jobUser` |
+| Wrong table name | SP uses `{Account}_{type}` prefix; Ads uses unprefixed names |
+| Schema mismatch | Check schema module matches actual report columns |
+
+## Deployment
+
+| Problem | Solution |
+|---------|----------|
+| Cloud Build fails on secrets | Verify Secret Manager binding names match env var names |
+| 503 on first request | Cold start with min-instances=0 — retry after 10 s |
+| OOM / container killed | Verify Cloud Run memory is 16 Gi (not 1 Gi) |
+| Scheduler job fails | Check OIDC SA has `run.invoker` role |
+| Cloud Tasks not reaching worker | Verify `CLOUD_RUN_SERVICE_URL` and OIDC SA |
+
+## Dashboard
+
+| Problem | Solution |
+|---------|----------|
+| Summary shows old data | Aggregate endpoints cached 2 min — wait or check `/recent` |
+| Statistics seem wrong | Run with `deduplicate=true` (default) |
+| Too many status rows | Run `cleanup-duplicates?dry_run=true` then delete |
+
+## Related pages
+
+- [Failed Reports](/operations/failed-reports)
+- [Operations Runbook](/operations/)
+- [FAQ](/faq)

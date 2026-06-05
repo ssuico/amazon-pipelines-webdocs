@@ -1,0 +1,20 @@
+# Design Decisions
+
+Architecture decision records (ADRs) for the Amazon Pipelines platform. These are immutable historical records — if a decision is revised, a new entry is created.
+
+## Index
+
+| Date | Decision | Status |
+|------|----------|--------|
+| 2026-04-14 | [BigQuery Caching Layer](/developer/design-decisions/bigquery-caching) | Accepted |
+| 2026-05-15 | [Dead Code Cleanup](/developer/design-decisions/dead-code-cleanup) | Accepted |
+| 2026-05-16 | [Brand Onboarding](/onboarding/brand-onboarding) | Accepted (canonical ops guide) |
+| 2026-05-18 | [Research App Override](/developer/design-decisions/research-app-override) | Accepted (temporary) |
+| 2026-05-18 | [Cloud Run Memory Upgrade](/developer/design-decisions/cloud-run-memory) | Accepted |
+
+Original ADR files remain in `amazon-pipelines/design-log/`.
+
+## Related pages
+
+- [Architecture Overview](/architecture/)
+- [Developer Guide](/developer/)

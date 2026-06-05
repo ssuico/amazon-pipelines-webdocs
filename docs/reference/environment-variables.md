@@ -1,0 +1,149 @@
+# Environment Variables
+
+Complete reference for configuration loaded by `Settings` in `app/config.py`. Values are read from `.env` locally or injected via Cloud Run / Secret Manager in production.
+
+## Application
+
+| Env var | Default | Required | Description |
+|---------|---------|----------|-------------|
+| `ENV` | `development` | No | Environment name |
+| `DEBUG` | `false` | No | Debug mode (`debug`/`dev`/`development` = true; `release`/`prod` = false) |
+
+## SP-API credentials
+
+### Default / main account
+
+| Env var | Description |
+|---------|-------------|
+| `SP_CLIENT_ID` | Default SP client ID |
+| `SP_CLIENT_SECRET` | Default SP client secret |
+| `SP_REFRESH_TOKEN` | Default SP refresh token |
+
+### OE (standalone)
+
+| Env var | Description |
+|---------|-------------|
+| `OE_SP_CLIENT_ID` | OE SP client ID |
+| `OE_SP_CLIENT_SECRET` | OE SP client secret |
+| `OE_SP_REFRESH_TOKEN` | OE SP refresh token |
+
+### CP shared app
+
+| Env var | Description |
+|---------|-------------|
+| `CP_SP_CLIENT_ID` | Shared CP SP client ID |
+| `CP_SP_CLIENT_SECRET` | Shared CP SP client secret |
+
+### Research-app override
+
+| Env var | Description |
+|---------|-------------|
+| `RESEARCH_APP_SP_CLIENT_ID` | Research LWA client ID |
+| `RESEARCH_APP_SP_CLIENT_SECRET` | Research LWA client secret |
+
+Brands in `RESEARCH_APP_BRANDS` use these credentials instead of CP.
+
+### Brand refresh tokens
+
+Each SP brand has its own refresh token env var, e.g.:
+
+`BUMBLERIDE_SP_REFRESH_TOKEN`, `HEARTLAND_SP_REFRESH_TOKEN`, `COLE_HAAN_SP_REFRESH_TOKEN`, etc.
+
+See `app/config.py` for the full list of brand-specific fields.
+
+### SP-API settings
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `SP_API_REGION` | `us-east-1` | SP-API region |
+| `SP_API_MARKETPLACE_ID` | `ATVPDKIKX0DER` | US marketplace ID |
+
+## Ads API credentials
+
+### OE
+
+| Env var | Description |
+|---------|-------------|
+| `OE_ADS_CLIENT_ID` | OE Ads client ID |
+| `OE_ADS_CLIENT_SECRET` | OE Ads client secret |
+| `OE_ADS_REFRESH_TOKEN` | OE Ads refresh token |
+| `OE_ADS_PROFILE` | OE Ads profile ID |
+
+### CP shared app
+
+| Env var | Description |
+|---------|-------------|
+| `CP_ADS_CLIENT_ID` | Shared CP Ads client ID |
+| `CP_ADS_CLIENT_SECRET` | Shared CP Ads client secret |
+| `CP_ADS_REFRESH_TOKEN` | Shared CP Ads refresh token |
+
+### Brand profile IDs
+
+Each Ads brand has a profile env var, e.g.:
+
+`BUMBLERIDE_US_PROFILE`, `HEARTLAND_US_PROFILE`, `COLE_HAAN_US_PROFILE`, etc.
+
+Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `ADS_API_REGION` | `us-east-1` | Ads API region |
+
+## Google Cloud
+
+| Env var | Default | Required (prod) | Description |
+|---------|---------|-----------------|-------------|
+| `GCP_PROJECT_ID` | `research-analytics-v1` | Yes | GCP project |
+| `BIGQUERY_DATASET` | `amz_sp_api_reports_v1` | Yes | SP dataset |
+| `BIGQUERY_ADS_DATASET` | `amz_ads_api_reports_v1` | Yes | Ads dataset |
+| `GOOGLE_APPLICATION_CREDENTIALS` | — | Local only | Path to SA JSON key |
+
+## Cloud Tasks
+
+| Env var | Default | Required (prod) | Description |
+|---------|---------|-----------------|-------------|
+| `CLOUD_TASKS_PROJECT` | falls back to `GCP_PROJECT_ID` | Yes | Tasks project |
+| `CLOUD_TASKS_LOCATION` | `us-central1` | Yes | Queue region |
+| `CLOUD_TASKS_QUEUE` | `ads-reports-queue` | Yes | Ads dispatch queue |
+| `CLOUD_TASKS_RETRY_QUEUE` | `ads-reports-retry-queue` | Yes | Ads retry queue |
+| `SP_CLOUD_TASKS_QUEUE` | `sp-reports-queue` | Yes | SP worker queue |
+| `CLOUD_RUN_SERVICE_URL` | — | Yes | Worker HTTP target base URL |
+| `CLOUD_TASKS_SERVICE_ACCOUNT` | — | Yes | OIDC identity for task HTTP calls |
+
+## Throttling — SP-API
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `SP_TASK_START_SPACING_SECONDS` | `45` | Delay between SP task dispatches |
+| `SP_API_MIN_REQUEST_INTERVAL_SECONDS` | `1.0` | Min interval between SP API calls |
+| `SP_API_HTTP_MAX_ATTEMPTS` | `4` | HTTP retry attempts |
+| `SP_API_HTTP_INITIAL_BACKOFF_SECONDS` | `2.0` | Initial backoff |
+| `SP_API_HTTP_MAX_BACKOFF_SECONDS` | `60.0` | Max backoff |
+| `SP_REPORT_TERMINAL_STATUS_MAX_ATTEMPTS` | `3` | Retries on terminal report status |
+| `SP_REPORT_TERMINAL_STATUS_INITIAL_BACKOFF_SECONDS` | `60.0` | Terminal status initial backoff |
+| `SP_REPORT_TERMINAL_STATUS_MAX_BACKOFF_SECONDS` | `300.0` | Terminal status max backoff |
+| `SP_REPORT_POLL_INTERVAL_SECONDS` | `30` | Report poll interval |
+
+## Throttling — Ads API
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `ADS_API_MIN_REQUEST_INTERVAL_SECONDS` | `0.5` | Min interval between Ads API calls |
+| `ADS_API_HTTP_MAX_ATTEMPTS` | `5` | HTTP retry attempts |
+| `ADS_API_HTTP_INITIAL_BACKOFF_SECONDS` | `1.0` | Initial backoff |
+| `ADS_API_HTTP_MAX_BACKOFF_SECONDS` | `120.0` | Max backoff |
+
+## Secret Manager
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `USE_SECRET_MANAGER` | `false` | Enable Secret Manager path |
+| `SECRET_MANAGER_PROJECT_ID` | — | Secret Manager project |
+
+Note: `app/utils/secrets.py` `get_secret()` is currently a stub. Production uses Cloud Run `--set-secrets` bindings in `cloudbuild.yaml`.
+
+## Related pages
+
+- [Credentials & Auth](/onboarding/credentials)
+- [Deployment](/deployment/)
+- [Cloud Run](/deployment/cloud-run)
