@@ -167,6 +167,8 @@ export default withMermaid(
                   { text: 'BigQuery Caching', link: '/developer/design-decisions/bigquery-caching' },
                   { text: 'Dead Code Cleanup', link: '/developer/design-decisions/dead-code-cleanup' },
                   { text: 'Research App Override', link: '/developer/design-decisions/research-app-override' },
+                  { text: 'FBA Inventory Snapshot', link: '/developer/design-decisions/fba-inventory-snapshot' },
+                  { text: 'Research-App SP Migration', link: '/developer/design-decisions/research-app-sp-migration' },
                   { text: 'Cloud Run Memory', link: '/developer/design-decisions/cloud-run-memory' },
                 ],
               },
