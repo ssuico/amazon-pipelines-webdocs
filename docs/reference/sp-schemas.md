@@ -49,7 +49,7 @@ for schema in get_all_schemas():
 | `GET_FLAT_FILE_OPEN_LISTINGS_DATA` | `inventory` | `reports/inventory.py` |
 | `GET_MERCHANT_LISTINGS_ALL_DATA` | `listings` | `reports/listings.py` |
 | `GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` | `orders` | `reports/orders.py` |
-| `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` | `returns` | `reports/returns.py` |
+| `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` | `returns` | `reports/returns.py` (FBM; also normalizes `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA`) |
 | `GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA` | `fba_inventory` | `reports/fba_inventory.py` |
 | `GET_MERCHANTS_LISTINGS_FYP_REPORT` | `merchants_listings_fyp` | `reports/merchants_listings_fyp.py` |
 

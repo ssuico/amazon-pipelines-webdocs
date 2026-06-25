@@ -88,7 +88,7 @@ curl -X POST "http://localhost:8080/api/v1/sp/brands/OE/process-all-reports?load
 | `inventory` | GET_FLAT_FILE_OPEN_LISTINGS_DATA | `{account}_inventory` |
 | `listings` | GET_MERCHANT_LISTINGS_ALL_DATA | `{account}_listings` |
 | `sales_and_traffic` | GET_SALES_AND_TRAFFIC_REPORT | `{account}_sales_and_traffic` |
-| `returns` | GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE | `{account}_returns` |
+| `returns` | GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE + GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA | `{account}_returns` |
 | `fba_inventory` | GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA | `{account}_fba_inventory` |
 | `merchants_listings_fyp` | GET_MERCHANTS_LISTINGS_FYP_REPORT | `{account}_merchants_listings_fyp` |
 
@@ -96,12 +96,32 @@ curl -X POST "http://localhost:8080/api/v1/sp/brands/OE/process-all-reports?load
 
 `process_and_upsert_report` executes:
 
-1. **Resolve date range** — flags or explicit dates
-2. **Idempotency check** — skip duplicate recent report for same date range
-3. **Fetch** — create report → poll (~30 s interval) → download
+1. **Resolve date range** — flags or explicit dates (snapshot types skip the loop)
+2. **Idempotency check** — skip duplicate recent report for same date range or snapshot date
+3. **Fetch** — create report → poll (~30 s interval) → download (or reuse recent DONE report for snapshots)
 4. **Transform** — column mappings + aggregations via schema config
 5. **Upsert** — staging table + MERGE to BigQuery
 6. **Track status** — `report_status` table updated throughout
+
+### Returns (unified FBM + FBA)
+
+The `returns` key fetches **two** SP-API report types per date range and merges into one BigQuery table:
+
+- **FBM:** `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE`
+- **FBA:** `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA`
+
+Rows include a `Fulfillment_Channel` column (`FBM` / `FBA`). FBA fetch failures are logged but do not block FBM data. Merge key includes `Fulfillment_Channel`.
+
+### FBA inventory (snapshot mode)
+
+`fba_inventory` does **not** use `process_date_range_loop`. Each worker run performs one snapshot fetch:
+
+- SP-API window is always **today (UTC)** when creating a new report
+- BigQuery `Date` is **yesterday** when `load_last_day=true` (scheduler default), else today
+- `load_last_three_days`, `year`/`month`, and multi-day ranges are **ignored** (logged warning; single snapshot still runs)
+- Reuses recent DONE reports when available; respects `SP_FBA_NEAR_REALTIME_COOLDOWN_MINUTES` (default 30)
+
+See [FBA Inventory Snapshot](/developer/design-decisions/fba-inventory-snapshot).
 
 ## Date range processing
 
@@ -112,6 +132,8 @@ curl -X POST "http://localhost:8080/api/v1/sp/brands/OE/process-all-reports?load
 | `year` + `month` | Full month backfill |
 | `start_date` + `end_date` | Custom range |
 | Default (no flags) | Current month through yesterday |
+
+**Exception:** `fba_inventory` always runs a single snapshot regardless of backfill flags.
 
 `process_date_range_loop()` in `AmazonSPService` handles multi-day iteration with performance estimates of ~2–5 minutes per day per report type.
 

@@ -4,19 +4,16 @@ The Selling Partner API (SP-API) integration fetches seller reports for configur
 
 ## Authentication
 
-SP-API uses **Login with Amazon (LWA)** OAuth. Each brand needs a refresh token; CP brands share client ID and secret.
+SP-API uses **Login with Amazon (LWA)** OAuth. Each brand needs a refresh token; CP portfolio brands share Research-app client credentials.
 
 ### Credential models
 
 | Model | Client credentials | Brand-specific |
 |-------|-------------------|----------------|
 | **OE (standalone)** | Own `OE_SP_CLIENT_ID/SECRET` | `OE_SP_REFRESH_TOKEN` |
-| **CP brands** | Shared `CP_SP_CLIENT_ID/SECRET` | `{BRAND}_SP_REFRESH_TOKEN` |
-| **Research-app brands** | `RESEARCH_APP_SP_CLIENT_ID/SECRET` (override) | Brand refresh token |
+| **CP portfolio brands** | Shared `RESEARCH_APP_SP_CLIENT_ID/SECRET` | `{BRAND}_SP_REFRESH_TOKEN` |
 
-Research-app brands (temporary override): `HEARTLAND`, `COLEHAAN`, `EVENFLO`, `INVIROX`, `MOONBOOTS`, `USCAPE`, `WONDERFOLDCA`.
-
-See [Credentials & Auth](/onboarding/credentials).
+Ads API credentials are unchanged (`CP_ADS_*` + per-brand profile). See [Credentials & Auth](/onboarding/credentials).
 
 ### Token refresh
 
@@ -24,15 +21,15 @@ See [Credentials & Auth](/onboarding/credentials).
 
 ## Report types (7)
 
-| Key | SP-API type |
-|-----|-------------|
-| `sales_and_traffic` | `GET_SALES_AND_TRAFFIC_REPORT` |
-| `inventory` | `GET_FLAT_FILE_OPEN_LISTINGS_DATA` |
-| `listings` | `GET_MERCHANT_LISTINGS_ALL_DATA` |
-| `orders` | `GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` |
-| `returns` | `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` |
-| `fba_inventory` | `GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA` |
-| `merchants_listings_fyp` | `GET_MERCHANTS_LISTINGS_FYP_REPORT` |
+| Key | SP-API type | Notes |
+|-----|-------------|-------|
+| `sales_and_traffic` | `GET_SALES_AND_TRAFFIC_REPORT` | Date-range report |
+| `inventory` | `GET_FLAT_FILE_OPEN_LISTINGS_DATA` | Date-range report |
+| `listings` | `GET_MERCHANT_LISTINGS_ALL_DATA` | Date-range report |
+| `orders` | `GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` | Date-range report |
+| `returns` | `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` + `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA` | Unified FBM + FBA ingestion |
+| `fba_inventory` | `GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA` | Near-real-time snapshot (not date-loop) |
+| `merchants_listings_fyp` | `GET_MERCHANTS_LISTINGS_FYP_REPORT` | Date-range report |
 
 Full table reference: [SP Report Types](/reference/sp-report-types)
 
@@ -44,7 +41,9 @@ Full table reference: [SP Report Types](/reference/sp-report-types)
 - `get_report_status` / `wait_for_report` — poll until complete
 - `download_report` — fetch and parse report document
 - `process_and_upsert_report` — full pipeline (fetch → transform → BigQuery)
-- `process_date_range_loop` — multi-day date range processing
+- `process_date_range_loop` — multi-day date range processing (not used for `fba_inventory`)
+- `process_snapshot_report` — single-fetch snapshot path for `fba_inventory`
+- `process_unified_returns` — FBM + FBA returns merge for `returns`
 
 ## Rate limiting and retries
 
@@ -52,8 +51,8 @@ Configurable via environment variables:
 
 - `SP_API_MIN_REQUEST_INTERVAL_SECONDS` — minimum interval between requests
 - `SP_REPORT_POLL_INTERVAL_SECONDS` — poll interval while waiting
-- `SP_REPORT_MAX_WAIT_SECONDS` — max wait for report completion
-- `SP_API_HTTP_MAX_ATTEMPTS`, `SP_API_HTTP_BACKOFF_SECONDS` — HTTP retry backoff
+- `SP_FBA_NEAR_REALTIME_COOLDOWN_MINUTES` — FBA snapshot generation cooldown (default 30)
+- `SP_API_HTTP_MAX_ATTEMPTS`, `SP_API_HTTP_INITIAL_BACKOFF_SECONDS`, `SP_API_HTTP_MAX_BACKOFF_SECONDS` — HTTP retry backoff
 
 ## API endpoints
 
@@ -77,5 +76,5 @@ See [API Endpoints](/reference/endpoints) and [SP Pipeline](/pipelines/sp-pipeli
 
 - [SP Pipeline](/pipelines/sp-pipeline)
 - [SP Schemas](/reference/sp-schemas)
-- [Date range processing](/pipelines/sp-pipeline#date-range-processing)
+- [FBA Inventory Snapshot](/developer/design-decisions/fba-inventory-snapshot)
 - [Brand Onboarding](/onboarding/brand-onboarding)
