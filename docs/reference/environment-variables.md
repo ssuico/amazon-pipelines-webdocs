@@ -27,27 +27,18 @@ Complete reference for configuration loaded by `Settings` in `app/config.py`. Va
 | `OE_SP_CLIENT_SECRET` | OE SP client secret |
 | `OE_SP_REFRESH_TOKEN` | OE SP refresh token |
 
-### CP shared app
+### CP portfolio brands (Research-app SP credentials)
 
 | Env var | Description |
 |---------|-------------|
-| `CP_SP_CLIENT_ID` | Shared CP SP client ID |
-| `CP_SP_CLIENT_SECRET` | Shared CP SP client secret |
-
-### Research-app override
-
-| Env var | Description |
-|---------|-------------|
-| `RESEARCH_APP_SP_CLIENT_ID` | Research LWA client ID |
-| `RESEARCH_APP_SP_CLIENT_SECRET` | Research LWA client secret |
-
-Brands in `RESEARCH_APP_BRANDS` use these credentials instead of CP.
+| `RESEARCH_APP_SP_CLIENT_ID` | Shared Research LWA client ID for all CP portfolio SP brands |
+| `RESEARCH_APP_SP_CLIENT_SECRET` | Shared Research LWA client secret |
 
 ### Brand refresh tokens
 
 Each SP brand has its own refresh token env var, e.g.:
 
-`BUMBLERIDE_SP_REFRESH_TOKEN`, `HEARTLAND_SP_REFRESH_TOKEN`, `COLE_HAAN_SP_REFRESH_TOKEN`, etc.
+`BUMBLERIDE_SP_REFRESH_TOKEN`, `CLOUD_NINE_SP_REFRESH_TOKEN`, `REDFIELD_SP_REFRESH_TOKEN`, `SKINS_SP_REFRESH_TOKEN`, etc.
 
 See `app/config.py` for the full list of brand-specific fields.
 
@@ -123,6 +114,7 @@ Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
 | `SP_REPORT_TERMINAL_STATUS_INITIAL_BACKOFF_SECONDS` | `60.0` | Terminal status initial backoff |
 | `SP_REPORT_TERMINAL_STATUS_MAX_BACKOFF_SECONDS` | `300.0` | Terminal status max backoff |
 | `SP_REPORT_POLL_INTERVAL_SECONDS` | `30` | Report poll interval |
+| `SP_FBA_NEAR_REALTIME_COOLDOWN_MINUTES` | `30` | Min minutes between FBA snapshot `createReport` calls per seller |
 
 ## Throttling — Ads API
 

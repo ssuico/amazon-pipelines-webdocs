@@ -29,9 +29,9 @@ OE_SP_CLIENT_ID=your_client_id
 OE_SP_CLIENT_SECRET=your_client_secret
 OE_SP_REFRESH_TOKEN=your_refresh_token
 
-# CP App (shared by brand accounts)
-CP_SP_CLIENT_ID=cp_client_id
-CP_SP_CLIENT_SECRET=cp_client_secret
+# Research app (shared by CP portfolio brand accounts)
+RESEARCH_APP_SP_CLIENT_ID=research_app_client_id
+RESEARCH_APP_SP_CLIENT_SECRET=research_app_client_secret
 BUMBLERIDE_SP_REFRESH_TOKEN=brand_token
 
 # BigQuery
@@ -46,7 +46,7 @@ ENV=development
 DEBUG=true
 ```
 
-See [Credentials & Auth](/onboarding/credentials) for OE, CP, Research-app, and Ads models.
+See [Credentials & Auth](/onboarding/credentials) for OE, CP portfolio, and Ads models.
 
 ### 3. Run the application
 

@@ -20,13 +20,15 @@ Uses its own client ID, secret, and refresh token for both SP and Ads:
 - `OE_SP_CLIENT_ID`, `OE_SP_CLIENT_SECRET`, `OE_SP_REFRESH_TOKEN`
 - `OE_ADS_CLIENT_ID`, `OE_ADS_CLIENT_SECRET`, `OE_ADS_REFRESH_TOKEN`, `OE_ADS_PROFILE`
 
-### CP brands (SP-API)
+### CP portfolio brands (SP-API)
 
-All CP brands share:
+All CP portfolio brands share the Research-app LWA application:
 
-- `CP_SP_CLIENT_ID`, `CP_SP_CLIENT_SECRET`
+- `RESEARCH_APP_SP_CLIENT_ID`, `RESEARCH_APP_SP_CLIENT_SECRET`
 
 Each brand adds only its refresh token, e.g. `BUMBLERIDE_SP_REFRESH_TOKEN`.
+
+See [Research-App SP Migration](/developer/design-decisions/research-app-sp-migration).
 
 ### CP brands (Ads API)
 
@@ -35,21 +37,6 @@ All CP Ads brands share:
 - `CP_ADS_CLIENT_ID`, `CP_ADS_CLIENT_SECRET`, `CP_ADS_REFRESH_TOKEN`
 
 Each brand adds a profile ID, e.g. `BUMBLERIDE_US_PROFILE`.
-
-### Research-app brands (SP-API only)
-
-Some brands' SP refresh tokens were minted against the Research LWA application instead of CP. For these brands, `get_account_credentials()` swaps client ID/secret to Research-app credentials:
-
-| Env var | Purpose |
-|---------|---------|
-| `RESEARCH_APP_SP_CLIENT_ID` | Research LWA client ID |
-| `RESEARCH_APP_SP_CLIENT_SECRET` | Research LWA client secret |
-
-**Affected brands** (defined in `RESEARCH_APP_BRANDS`):
-
-`HEARTLAND`, `COLEHAAN`, `EVENFLO`, `INVIROX`, `MOONBOOTS`, `USCAPE`, `WONDERFOLDCA`
-
-This is a temporary override. See [Design Decision: Research App Override](/developer/design-decisions/research-app-override).
 
 ## Runtime account discovery
 
@@ -60,7 +47,7 @@ curl http://localhost:8080/api/v1/accounts
 curl http://localhost:8080/api/v1/ads/accounts
 ```
 
-- **SP brands:** `AccountConfig.get_available_accounts()`
+- **SP brands:** `AccountConfig.get_available_accounts()` — gated on Research-app client credentials plus per-brand refresh tokens
 - **Ads brands:** `AccountConfig.get_available_ads_accounts()`
 
 ## Inbound API security
@@ -100,7 +87,7 @@ See [Infrastructure](/deployment/infrastructure#security).
 ## Cloud Tasks (production)
 
 | Variable | Default | Purpose |
-|----------|---------|---------|
+|----------|---------|-------------|
 | `CLOUD_RUN_SERVICE_URL` | — | Worker HTTP target |
 | `CLOUD_TASKS_QUEUE` | `ads-reports-queue` | Ads daily dispatch |
 | `CLOUD_TASKS_RETRY_QUEUE` | `ads-reports-retry-queue` | Ads retries |
@@ -109,11 +96,16 @@ See [Infrastructure](/deployment/infrastructure#security).
 
 Full list: [Environment Variables](/reference/environment-variables)
 
+## Cloud Run redeploy
+
+Cloud Run pins Secret Manager values when a **new revision** is deployed. After updating any `*_SP_REFRESH_TOKEN` or `RESEARCH_APP_SP_*` secret, redeploy the service (push to `main` / re-run Cloud Build, or `gcloud run services update`) so workers pick up the latest secret versions.
+
 ## Security notes
 
 - Never commit `.env` or credential files to git
 - Use Secret Manager in production (via `cloudbuild.yaml` `--set-secrets`)
 - Rotate refresh tokens when authorization is revoked in Seller Central / Advertising Console
+- Remove stale `CP_SP_*` lines from local `.env` — those env vars were removed in the June 2026 migration
 
 ## Related pages
 
