@@ -1,5 +1,7 @@
 # Operations Runbook
 
+**Last updated:** 2026-07-20
+
 Operational procedures for monitoring, incident response, and maintenance of the Amazon Pipelines platform.
 
 ## Daily checks
@@ -11,15 +13,20 @@ Operational procedures for monitoring, incident response, and maintenance of the
 | Ads pipeline summary | `curl $URL/api/v1/ads-report-status/summary` |
 | Failed SP reports | `curl "$URL/api/v1/report-status/failed?days_back=1"` |
 | Failed Ads reports | `curl "$URL/api/v1/ads-report-status/failed?days_back=1"` |
-| Cloud Scheduler jobs | Verify 7 SP + 1 Ads jobs ran successfully in GCP Console |
+| Cloud Scheduler jobs | Verify 7 SP + 1 Ads (+ weekly AMC if enabled) jobs in GCP Console |
+| SP / Ads coverage matrix | `curl "$URL/api/v1/report-status/matrix"` · `curl "$URL/api/v1/ads-report-status/matrix"` |
 
 ## Incident playbooks
 
 ### SP batch failures
 
-1. Check failed reports: `GET /api/v1/report-status/failed?days_back=1`
-2. Identify affected brand and report type
-3. Re-dispatch for failed brand:
+1. Check matrix / failed: `GET /api/v1/report-status/matrix` and `/failed?days_back=1`
+2. Prefer gap-fill for Remaining cells:
+   ```bash
+   curl -X POST "$URL/api/v1/sp/dispatch-remaining?dry_run=true"
+   curl -X POST "$URL/api/v1/sp/dispatch-remaining?include_failed=true"
+   ```
+3. Or re-dispatch one type for a brand:
    ```bash
    curl -X POST "$URL/api/v1/sp/reports/{type}/process-all-brands?accounts_filter={brand}&load_last_day=true"
    ```
@@ -93,6 +100,8 @@ See [Operational Scripts](/operations/scripts) for CLI tools:
 ## Related pages
 
 - [Monitoring](/operations/monitoring)
+- [SP Control Panel](/operations/sp-control-panel)
+- [Ads Control Panel](/operations/ads-control-panel)
 - [Failed Reports](/operations/failed-reports)
 - [Scheduled Jobs](/operations/scheduled-jobs)
 - [Common Issues](/troubleshooting/common-issues)

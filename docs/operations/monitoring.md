@@ -1,5 +1,7 @@
 # Monitoring
 
+**Last updated:** 2026-07-20
+
 Diagnostic REST endpoints for monitoring SP-API and Ads pipeline executions. Data is stored in BigQuery status tables.
 
 ## Base paths
@@ -83,6 +85,19 @@ High-level health summary for dashboards.
 
 BigQuery connectivity check for SP tracker.
 
+### GET `/api/v1/report-status/matrix`
+
+Daily account × report-type coverage grid (America/New_York calendar day).
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `date` | today (NY) | `YYYY-MM-DD` |
+| `account_name` | all | One SP account |
+| `report_type_key` | all 7 | One report type |
+| `run_status` | all | `Accomplished` \| `In Progress` \| `Failed (Needs Rerun)` \| `Remaining` |
+
+Response includes `expected_cells`, `counts`, and per-cell `records`. Prefer pairing with [SP Control Panel](/operations/sp-control-panel) gap-fill.
+
 ### POST `/api/v1/report-status/cleanup-duplicates`
 
 Remove duplicate status rows, keeping most recent per unique report.
@@ -105,8 +120,11 @@ Same surface under `/api/v1/ads-report-status`:
 | `GET /statistics` | Aggregated stats (single consolidated BQ query) |
 | `GET /summary` | Dashboard summary |
 | `GET /health` | BQ connectivity check |
+| `GET /matrix` | Daily account × report-type coverage (same status vocabulary as SP) |
 
 Ads statuses: `COMPLETED`, `FAILED`, `RUNNING`, `skipped` (idempotency guard).
+
+Control-panel gap-fill: [Ads Control Panel](/operations/ads-control-panel).
 
 ---
 
@@ -149,6 +167,8 @@ Common SP record fields: `report_request_id`, `account_name`, `report_type_key`,
 ## Related pages
 
 - [Failed Reports](/operations/failed-reports)
+- [SP Control Panel](/operations/sp-control-panel)
+- [Ads Control Panel](/operations/ads-control-panel)
 - [Dashboard SQL](/operations/dashboard-queries)
 - [SP Status Tracker Internals](/troubleshooting/sp-status-tracker)
 - [Operations Runbook](/operations/)
