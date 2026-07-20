@@ -1,5 +1,7 @@
 # Reference Overview
 
+**Last updated:** 2026-07-20
+
 API, schema, and configuration reference for the Amazon Pipelines platform.
 
 ## Quick links
@@ -12,6 +14,7 @@ API, schema, and configuration reference for the Amazon Pipelines platform.
 | [Ads Report Types](/reference/ads-report-types) | 12 Ads reports with BQ tables |
 | [SP Schemas](/reference/sp-schemas) | Schema system and adding reports |
 | [BigQuery & Datasets](/reference/bigquery) | Datasets, tables, upsert pattern |
+| [Brand Analytics](/reference/brand-analytics) | Curated `agg_tables_v2` read API |
 | [Legacy Migration](/reference/migration-legacy) | Flask → FastAPI endpoint mapping |
 
 ## Live API docs

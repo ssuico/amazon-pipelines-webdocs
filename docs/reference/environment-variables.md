@@ -1,5 +1,7 @@
 # Environment Variables
 
+**Last updated:** 2026-07-20
+
 Complete reference for configuration loaded by `Settings` in `app/config.py`. Values are read from `.env` locally or injected via Cloud Run / Secret Manager in production.
 
 ## Application
@@ -87,6 +89,8 @@ Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
 | `GCP_PROJECT_ID` | `research-analytics-v1` | Yes | GCP project |
 | `BIGQUERY_DATASET` | `amz_sp_api_reports_v1` | Yes | SP dataset |
 | `BIGQUERY_ADS_DATASET` | `amz_ads_api_reports_v1` | Yes | Ads dataset |
+| `BIGQUERY_AGG_DATASET` | `agg_tables_v2` | Brand Analytics | Aggregated metrics read API |
+| `BIGQUERY_AMC_DATASET` | `amazon_amc_v1` | AMC | Path to Conversion warehouse |
 | `GOOGLE_APPLICATION_CREDENTIALS` | — | Local only | Path to SA JSON key |
 
 ## Cloud Tasks
@@ -98,8 +102,21 @@ Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
 | `CLOUD_TASKS_QUEUE` | `ads-reports-queue` | Yes | Ads dispatch queue |
 | `CLOUD_TASKS_RETRY_QUEUE` | `ads-reports-retry-queue` | Yes | Ads retry queue |
 | `SP_CLOUD_TASKS_QUEUE` | `sp-reports-queue` | Yes | SP worker queue |
+| `AMC_CLOUD_TASKS_QUEUE` | `amc-reports-queue` | AMC | AMC worker queue |
 | `CLOUD_RUN_SERVICE_URL` | — | Yes | Worker HTTP target base URL |
 | `CLOUD_TASKS_SERVICE_ACCOUNT` | — | Yes | OIDC identity for task HTTP calls |
+
+## AMC credentials
+
+| Env var | Description |
+|---------|-------------|
+| `CP_AMC_REFRESH_TOKEN` | Dedicated AMC LWA refresh token (client ID/secret shared with CP Ads) |
+| `{BRAND}_AMC_ENTITY_ID` | AMC entity / advertiser ID |
+| `{BRAND}_AMC_INSTANCE_ID` | Production instance ID |
+| `{BRAND}_AMC_SANDBOX_INSTANCE_ID` | Sandbox instance (stored; not used by default) |
+| `{BRAND}_AMC_MARKETPLACE_ID` | Marketplace ID for AMC headers |
+
+See [AMC Pipeline](/pipelines/amc-pipeline).
 
 ## Throttling — SP-API
 
@@ -124,6 +141,22 @@ Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
 | `ADS_API_HTTP_MAX_ATTEMPTS` | `5` | HTTP retry attempts |
 | `ADS_API_HTTP_INITIAL_BACKOFF_SECONDS` | `1.0` | Initial backoff |
 | `ADS_API_HTTP_MAX_BACKOFF_SECONDS` | `120.0` | Max backoff |
+| `ADS_ASYNC_POLL_ENABLED` | `true` | Create-then-check async worker path |
+| `ADS_CHECK_INITIAL_DELAY_SECONDS` | `120` | Delay before first check task |
+| `ADS_CHECK_BACKOFF_SECONDS` | `120` | Linear backoff step between checks |
+| `ADS_CHECK_MAX_BACKOFF_SECONDS` | `600` | Cap on check backoff |
+| `ADS_CHECK_MAX_ATTEMPTS` | `15` | Max check attempts before FAILED (timeout) |
+| `ADS_CHECK_RECREATE_MAX_ATTEMPTS` | `2` | Max recreate attempts on Amazon FAILED |
+| `ADS_RUNNING_SKIP_MINUTES` | `120` | Skip create if recent RUNNING exists |
+| `ADS_DISPATCH_STAGGER_SECONDS` | `15` | Stagger between dispatch task schedule times |
+
+## AMC polling
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `AMC_POLL_INTERVAL_SECONDS` | `60` | Check-execution spacing |
+| `AMC_CHECK_MAX_ATTEMPTS` | `90` | Max check attempts |
+| `AMC_EXECUTION_TIMEOUT_SECONDS` | `3600` | Execution timeout |
 
 ## Secret Manager
 

@@ -1,5 +1,7 @@
 # BigQuery & Datasets
 
+**Last updated:** 2026-07-20
+
 How Amazon Pipelines stores report data in Google BigQuery.
 
 ## Datasets
@@ -8,6 +10,8 @@ How Amazon Pipelines stores report data in Google BigQuery.
 |---------|---------|----------|
 | `BIGQUERY_DATASET` | `amz_sp_api_reports_v1` | SP report tables, `report_status`, `account_details` |
 | `BIGQUERY_ADS_DATASET` | `amz_ads_api_reports_v1` | Ads report tables, `ads_report_status` |
+| `BIGQUERY_AGG_DATASET` | `agg_tables_v2` | Brand Analytics curated metrics (read API) |
+| `BIGQUERY_AMC_DATASET` | `amazon_amc_v1` | AMC Path to Conversion + campaigns tables |
 | `GCP_PROJECT_ID` | `research-analytics-v1` | GCP project |
 
 ## Table naming
@@ -33,6 +37,8 @@ The migration script `scripts/migrate_ads_tables.py` may use a legacy `{account}
 | `report_status` | SP | None |
 | `account_details` | SP | None |
 | `ads_report_status` | Ads | None |
+| `path_to_conversion` | AMC | None (shared; `brand_name` column) |
+| `path_to_conversion_campaigns` | AMC | None |
 
 ## BigQueryClient
 
