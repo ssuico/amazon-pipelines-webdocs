@@ -1,17 +1,20 @@
 # FAQ
 
+**Last updated:** 2026-07-20
+
 Frequently asked questions about the Amazon Pipelines platform.
 
 ## General
 
 ### What does Amazon Pipelines do?
 
-It fetches reports from Amazon SP-API and Amazon Ads API, transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate daily batch processing.
+It fetches reports from Amazon SP-API, Amazon Ads API, and Amazon Marketing Cloud (AMC), transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate batch processing. A Brand Analytics read API serves curated metrics from `agg_tables_v2`.
 
 ### How many report types are supported?
 
 - **SP-API:** 7 report types (orders, inventory, listings, sales, returns, FBA, FYP)
 - **Ads API:** 12 report types across SP, SB, and SD
+- **AMC:** Path to Conversion (weekly; Vertx pilot)
 
 ### Where is the live API documentation?
 
@@ -21,11 +24,11 @@ The running Cloud Run service exposes OpenAPI at `/docs`. This VitePress site co
 
 ### What's the difference between OE and CP brands?
 
-OE has its own Amazon developer app credentials. CP brands share one SP app and one Ads app — each brand only needs its own refresh token (SP) and profile ID (Ads).
+OE has its own Amazon developer app credentials. CP portfolio SP brands share Research-app LWA client credentials — each brand only needs its own refresh token (SP) and Ads profile ID. See [Credentials](/onboarding/credentials).
 
-### What are Research-app brands?
+### Do we still use CP_SP client credentials?
 
-Seven brands whose SP refresh tokens were issued against a different LWA app. The service temporarily overrides client credentials for these brands. See [Credentials](/onboarding/credentials).
+No. As of the June 2026 migration, portfolio SP brands use `RESEARCH_APP_SP_CLIENT_ID/SECRET` directly. Ads still uses `CP_ADS_*`.
 
 ### Why doesn't my brand appear in `/accounts`?
 

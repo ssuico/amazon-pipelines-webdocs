@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: Amazon Pipelines
-  text: SP-API & Ads API Data Platform
-  tagline: Fetch Amazon seller and advertising reports, transform them with schema-driven pipelines, and persist to BigQuery — orchestrated by Cloud Tasks on Cloud Run.
+  text: SP, Ads & AMC Data Platform
+  tagline: Fetch Amazon seller, advertising, and AMC reports; transform them with schema-driven pipelines; persist to BigQuery — orchestrated by Cloud Tasks on Cloud Run.
   actions:
     - theme: brand
       text: Get Started
@@ -19,16 +19,16 @@ hero:
 features:
   - icon: 📦
     title: Multi-Account Support
-    details: OE standalone accounts, CP shared-app brands, and Research-app credential overrides — one service for all brands.
+    details: OE standalone accounts and CP portfolio brands on Research-app SP credentials — one service for all brands.
   - icon: ⚡
     title: Cloud Tasks Workers
-    details: Parallel dispatch for SP (7 report types × brands) and Ads (12 report types × accounts) with idempotency guards.
+    details: Parallel SP/Ads/AMC dispatch with async Ads check chains and idempotent gap-fill controls.
   - icon: 📊
     title: BigQuery Upserts
-    details: Schema-driven MERGE operations into separate SP and Ads datasets with status tracking tables.
+    details: Schema-driven MERGE into SP, Ads, AMC, and agg_tables_v2 datasets with status tracking.
   - icon: 🔍
     title: Status Dashboards
-    details: REST APIs for pipeline health, failed reports, activity logs, and aggregated statistics.
+    details: Coverage matrices, failed reports, activity logs, and Brand Analytics read APIs.
   - icon: 📅
     title: Scheduled Jobs
     details: Cloud Scheduler triggers daily batch dispatch — staggered SP jobs and a single Ads dispatch.
@@ -36,6 +36,8 @@ features:
     title: Developer Friendly
     details: FastAPI with OpenAPI at /docs, modular schemas, and operational scripts for backfill and retry.
 ---
+
+**Last updated:** 2026-07-20
 
 ## Who is this documentation for?
 
@@ -53,36 +55,43 @@ flowchart LR
   subgraph sched [CloudScheduler]
     SPJobs["7 SP report jobs"]
     AdsJob["1 Ads dispatch job"]
+    AmcJob["Weekly AMC dispatch"]
   end
 
   subgraph cr [CloudRun]
     Dispatch["Batch dispatch"]
-    Workers["SP and Ads workers"]
-    StatusAPI["Status APIs"]
+    Workers["SP Ads AMC workers"]
+    StatusAPI["Status and analytics APIs"]
   end
 
   subgraph tasks [CloudTasks]
     SPQ[sp-reports-queue]
     AdsQ[ads-reports-queue]
     RetryQ[ads-reports-retry-queue]
+    AmcQ[amc-reports-queue]
   end
 
   subgraph bq [BigQuery]
     SPData["SP report tables"]
     AdsData["Ads report tables"]
+    AmcData["AMC tables"]
     SPStatus[report_status]
     AdsStatus[ads_report_status]
   end
 
   SPJobs --> Dispatch
   AdsJob --> Dispatch
+  AmcJob --> Dispatch
   Dispatch --> SPQ
   Dispatch --> AdsQ
+  Dispatch --> AmcQ
   SPQ --> Workers
   AdsQ --> Workers
   RetryQ --> Workers
+  AmcQ --> Workers
   Workers --> SPData
   Workers --> AdsData
+  Workers --> AmcData
   Workers --> SPStatus
   Workers --> AdsStatus
   StatusAPI --> SPStatus
@@ -95,6 +104,8 @@ flowchart LR
 |----------|-------------|---------|
 | **SP-API** | 7 (orders, inventory, listings, sales, returns, FBA, FYP) | `amz_sp_api_reports_v1` |
 | **Ads API** | 12 (SP, SB, SD campaigns, targeting, search terms, etc.) | `amz_ads_api_reports_v1` |
+| **AMC** | Path to Conversion (weekly) | `amazon_amc_v1` |
+| **Brand Analytics** | Read API over curated metrics | `agg_tables_v2` |
 
 ## Live API documentation
 

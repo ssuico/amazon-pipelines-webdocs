@@ -1,6 +1,10 @@
 # Amazon Ads API Integration
 
+**Last updated:** 2026-07-20
+
 Amazon Ads API integration supports **12 report types** across Sponsored Products (SP), Sponsored Brands (SB), and Sponsored Display (SD), with BigQuery persistence, incremental loading, and Cloud Tasks-based daily dispatch.
+
+Default worker path is **async create-then-check** (`ADS_ASYNC_POLL_ENABLED=true`). See [Ads Pipeline](/pipelines/ads-pipeline) and [Ads Async Poll](/developer/design-decisions/ads-async-poll). Control-panel gap-fill: [Ads Control Panel](/operations/ads-control-panel).
 
 ## Authentication
 

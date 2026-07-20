@@ -1,14 +1,16 @@
 # Architecture Overview
 
-Amazon Pipelines is a **FastAPI** service deployed on **Google Cloud Run** that orchestrates data extraction from Amazon SP-API and Amazon Ads API, transforms report data using schema-driven pipelines, and persists results to **BigQuery**.
+**Last updated:** 2026-07-20
+
+Amazon Pipelines is a **FastAPI** service deployed on **Google Cloud Run** that orchestrates data extraction from Amazon SP-API, Amazon Ads API, and Amazon Marketing Cloud (AMC), transforms report data using schema-driven pipelines, and persists results to **BigQuery**.
 
 ## Design principles
 
 1. **External scheduling** — Cloud Scheduler triggers batch endpoints; no in-process cron
-2. **Async fan-out** — Cloud Tasks dispatches parallel workers per brand/report
+2. **Async fan-out** — Cloud Tasks dispatches parallel workers per brand/report (Ads/AMC use create-then-check when generation is slow)
 3. **Schema-driven upserts** — Each report type defines BigQuery schema, merge keys, and transformations
-4. **Status tracking** — Every pipeline run writes to BigQuery status tables for observability
-5. **Multi-account** — Shared CP app credentials with per-brand refresh tokens and Ads profile IDs
+4. **Status tracking** — Pipeline runs write status tables; control panels use daily coverage matrices
+5. **Multi-account** — Research-app SP credentials for CP portfolio brands; CP Ads shared app + profiles; AMC dedicated refresh token
 
 ## High-level topology
 
@@ -59,15 +61,17 @@ flowchart TB
 
 ## Pipeline comparison
 
-| Aspect | SP-API | Ads API |
-|--------|--------|---------|
-| **Scheduler pattern** | 7 jobs → one per report type | 1 job → `/ads/dispatch` |
-| **Fan-out unit** | brands per report type (~8 tasks) | account × report type (~348 tasks) |
-| **Primary queue** | `sp-reports-queue` | `ads-reports-queue` |
-| **Retry queue** | Cloud Tasks retries on main queue | `ads-reports-retry-queue` |
-| **Date logic** | `load_last_day`, 3-day, month backfill | Incremental from BQ max date − 3 days |
-| **Status table** | `report_status` | `ads_report_status` |
-| **Idempotency** | Skip duplicate recent report for date range | Skip if COMPLETED in 20 h |
+| Aspect | SP-API | Ads API | AMC |
+|--------|--------|---------|-----|
+| **Scheduler pattern** | 7 jobs → one per report type | 1 job → `/ads/dispatch` | Weekly → `/amc/dispatch` |
+| **Fan-out unit** | brands per report type | account × report type | brand (pilot: Vertx) |
+| **Primary queue** | `sp-reports-queue` | `ads-reports-queue` | `amc-reports-queue` |
+| **Retry / check** | Cloud Tasks retries on main queue | `ads-reports-retry-queue` + check-report | check-execution chain |
+| **Date logic** | `load_last_day`, backfill; FBA snapshot | Incremental from BQ max date − 3 days | `MOST_RECENT_WEEK` |
+| **Status / warehouse** | `report_status` | `ads_report_status` | `amazon_amc_v1` tables |
+| **Idempotency** | Skip duplicate recent / FBA cooldown | Skip COMPLETED 20h / RUNNING window | Payload-carried job state |
+
+Detail: [SP](/pipelines/sp-pipeline) · [Ads](/pipelines/ads-pipeline) · [AMC](/pipelines/amc-pipeline)
 
 ## Code structure
 
@@ -79,8 +83,11 @@ amazon-pipelines/
 │   ├── routes/                 # HTTP endpoints (7 modules)
 │   ├── services/sp/            # SP API, BQ client, status tracker
 │   ├── services/ads/           # Ads API, processor, tracker
+│   ├── services/amc/           # AMC Path to Conversion
+│   ├── services/analytics/     # Brand Analytics (agg_tables_v2)
 │   ├── schemas/sp/             # SP report schemas
 │   ├── schemas/ads/            # Ads report schemas
+│   ├── schemas/amc/            # AMC schemas
 │   └── utils/                  # auth, cloud_tasks, cache, logger
 ├── scripts/                    # Operational CLI tools
 ├── cloudbuild.yaml             # Cloud Build → Cloud Run deploy
@@ -93,6 +100,8 @@ amazon-pipelines/
 |---------|----------|------|
 | `AmazonSPService` | `app/services/sp/amazon_sp.py` | SP-API report lifecycle |
 | `AmazonAdsService` | `app/services/ads/amazon_ads.py` | Ads API report lifecycle |
+| `AmazonAMCService` / AMC processor | `app/services/amc/` | AMC Path to Conversion |
+| `BrandAggService` | `app/services/analytics/` | Brand Analytics read API |
 | `AdsReportProcessor` | `app/services/ads/report_processor.py` | Transform & incremental load |
 | `BigQueryClient` | `app/services/sp/bigquery_client.py` | MERGE upserts |
 | `ReportStatusTracker` | `app/services/sp/report_status_tracker.py` | SP status in `report_status` |
@@ -105,6 +114,8 @@ amazon-pipelines/
 |---------|--------------|----------|
 | SP | `amz_sp_api_reports_v1` | `{Account}_{report_type}` tables, `report_status`, `account_details` |
 | Ads | `amz_ads_api_reports_v1` | `SP_*`, `SB_*`, `SD_*` tables, `ads_report_status` |
+| AMC | `amazon_amc_v1` | `path_to_conversion`, `path_to_conversion_campaigns` |
+| Analytics | `agg_tables_v2` | Curated Brand Analytics metrics (read API) |
 
 See [BigQuery & Datasets](/reference/bigquery) for naming conventions.
 

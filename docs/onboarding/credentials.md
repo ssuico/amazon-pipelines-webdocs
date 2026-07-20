@@ -1,5 +1,7 @@
 # Credentials & Authorization
 
+**Last updated:** 2026-07-20
+
 How Amazon Pipelines authenticates with Amazon APIs and manages multi-account credentials.
 
 ## API surfaces
@@ -8,6 +10,7 @@ How Amazon Pipelines authenticates with Amazon APIs and manages multi-account cr
 |---------|------------|----------------------|
 | **SP-API** | LWA OAuth | Refresh token per brand |
 | **Ads API** | LWA OAuth + profile | Profile ID per brand |
+| **AMC** | LWA OAuth (shared Ads client + AMC refresh token) | Entity / instance / marketplace IDs |
 
 Source of truth: `app/config.py` (`Settings` and `AccountConfig`).
 
@@ -37,6 +40,16 @@ All CP Ads brands share:
 - `CP_ADS_CLIENT_ID`, `CP_ADS_CLIENT_SECRET`, `CP_ADS_REFRESH_TOKEN`
 
 Each brand adds a profile ID, e.g. `BUMBLERIDE_US_PROFILE`.
+
+### AMC (Path to Conversion)
+
+Shares CP Ads LWA **client** credentials; uses a dedicated refresh token:
+
+- `CP_ADS_CLIENT_ID`, `CP_ADS_CLIENT_SECRET`
+- `CP_AMC_REFRESH_TOKEN`
+- Per brand: `{BRAND}_AMC_ENTITY_ID`, `{BRAND}_AMC_INSTANCE_ID`, `{BRAND}_AMC_MARKETPLACE_ID`
+
+See [AMC Pipeline](/pipelines/amc-pipeline).
 
 ## Runtime account discovery
 

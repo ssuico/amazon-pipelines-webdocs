@@ -4,10 +4,10 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(
   defineConfig({
     title: 'Amazon Pipelines',
-    description: 'Documentation for Amazon SP-API and Ads API data pipelines',
+    description: 'Documentation for Amazon SP-API, Ads API, and AMC data pipelines',
     lang: 'en-US',
     cleanUrls: true,
-    lastUpdated: true,
+    lastUpdated: false,
     ignoreDeadLinks: [/^http:\/\/localhost/],
     markdown: {
       lineNumbers: true,
@@ -36,6 +36,7 @@ export default withMermaid(
             { text: 'Overview', link: '/pipelines/' },
             { text: 'SP Pipeline', link: '/pipelines/sp-pipeline' },
             { text: 'Ads Pipeline', link: '/pipelines/ads-pipeline' },
+            { text: 'AMC Pipeline', link: '/pipelines/amc-pipeline' },
             { text: 'Batch Scheduling', link: '/pipelines/batch-scheduling' },
           ],
         },
@@ -44,6 +45,8 @@ export default withMermaid(
           items: [
             { text: 'Runbook', link: '/operations/' },
             { text: 'Monitoring', link: '/operations/monitoring' },
+            { text: 'SP Control Panel', link: '/operations/sp-control-panel' },
+            { text: 'Ads Control Panel', link: '/operations/ads-control-panel' },
             { text: 'Scheduled Jobs', link: '/operations/scheduled-jobs' },
           ],
         },
@@ -51,6 +54,7 @@ export default withMermaid(
           text: 'Reference',
           items: [
             { text: 'API Endpoints', link: '/reference/endpoints' },
+            { text: 'Brand Analytics', link: '/reference/brand-analytics' },
             { text: 'Environment Variables', link: '/reference/environment-variables' },
             { text: 'SP Report Types', link: '/reference/sp-report-types' },
             { text: 'Ads Report Types', link: '/reference/ads-report-types' },
@@ -97,6 +101,7 @@ export default withMermaid(
               { text: 'Overview', link: '/pipelines/' },
               { text: 'SP Pipeline', link: '/pipelines/sp-pipeline' },
               { text: 'Ads Pipeline', link: '/pipelines/ads-pipeline' },
+              { text: 'AMC Pipeline', link: '/pipelines/amc-pipeline' },
               { text: 'Data Flow & Processing', link: '/pipelines/data-flow-processing' },
               { text: 'Batch Scheduling', link: '/pipelines/batch-scheduling' },
             ],
@@ -118,6 +123,8 @@ export default withMermaid(
             items: [
               { text: 'Runbook', link: '/operations/' },
               { text: 'Monitoring', link: '/operations/monitoring' },
+              { text: 'SP Control Panel', link: '/operations/sp-control-panel' },
+              { text: 'Ads Control Panel', link: '/operations/ads-control-panel' },
               { text: 'Failed Reports', link: '/operations/failed-reports' },
               { text: 'Scheduled Jobs', link: '/operations/scheduled-jobs' },
               { text: 'Operational Scripts', link: '/operations/scripts' },
@@ -142,6 +149,7 @@ export default withMermaid(
             items: [
               { text: 'Overview', link: '/reference/' },
               { text: 'API Endpoints', link: '/reference/endpoints' },
+              { text: 'Brand Analytics', link: '/reference/brand-analytics' },
               { text: 'Environment Variables', link: '/reference/environment-variables' },
               { text: 'SP Report Types', link: '/reference/sp-report-types' },
               { text: 'Ads Report Types', link: '/reference/ads-report-types' },
@@ -169,6 +177,9 @@ export default withMermaid(
                   { text: 'Research App Override', link: '/developer/design-decisions/research-app-override' },
                   { text: 'FBA Inventory Snapshot', link: '/developer/design-decisions/fba-inventory-snapshot' },
                   { text: 'Research-App SP Migration', link: '/developer/design-decisions/research-app-sp-migration' },
+                  { text: 'AMC Path to Conversion', link: '/developer/design-decisions/amc-path-to-conversion' },
+                  { text: 'Ads Async Poll', link: '/developer/design-decisions/ads-async-poll' },
+                  { text: 'Force Gap-Fill', link: '/developer/design-decisions/dispatch-remaining-force' },
                   { text: 'Cloud Run Memory', link: '/developer/design-decisions/cloud-run-memory' },
                 ],
               },

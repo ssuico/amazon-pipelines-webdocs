@@ -1,5 +1,7 @@
 # Common Issues
 
+**Last updated:** 2026-07-20
+
 Consolidated troubleshooting guide for the most frequent Amazon Pipelines problems.
 
 ## Setup and credentials
@@ -22,10 +24,12 @@ Consolidated troubleshooting guide for the most frequent Amazon Pipelines proble
 | SP report stuck IN_PROGRESS | Check Cloud Run logs; SP poll timeout is ~1700 s |
 | Ads report stuck RUNNING | `POST /ads/reports/expire-stuck` then retry |
 | Empty report / no_data | Verify date range has data; check marketplace |
-| Duplicate processing skipped | Expected idempotency behavior — check status for `skipped` |
+| Duplicate processing skipped | Expected idempotency — use `dispatch-remaining?force=true` for Remaining cells only |
 | FBA inventory `fba_generation_cooldown` | Normal within 30-min window; wait or check for reusable DONE report |
 | FBA inventory backfill no-op | Snapshot report ignores multi-day flags — see [FBA Inventory Snapshot](/developer/design-decisions/fba-inventory-snapshot) |
 | Returns only FBM rows | FBA fetch may have failed — check worker logs; FBM data still lands |
+| Ads batch extremely slow / deadline overruns | Confirm async path (`ADS_ASYNC_POLL_ENABLED=true`); use expire-stuck + retry-failed |
+| Matrix Remaining not shrinking | Prefer `dispatch-remaining` over full Cartesian dispatch |
 | MERGE failed | Verify merge columns exist in DataFrame and schema |
 | 429 throttling | Queue backoff handles this; increase spacing if persistent |
 
