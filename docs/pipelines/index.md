@@ -1,24 +1,29 @@
 # Data Pipelines Overview
 
-Amazon Pipelines runs two parallel data pipelines — **SP-API** and **Ads API** — that share Cloud Run infrastructure but differ in scheduling, fan-out, and date logic.
+**Last updated:** 2026-07-20
+
+Amazon Pipelines runs three Amazon data surfaces — **SP-API**, **Ads API**, and **AMC** — that share Cloud Run infrastructure but differ in scheduling, fan-out, and processing.
 
 ## Pipeline summary
 
 | Pipeline | Report types | Dispatch pattern | Queue |
 |----------|-------------|------------------|-------|
 | **SP-API** | 7 | 7 Cloud Scheduler jobs (one per report type) | `sp-reports-queue` |
-| **Ads API** | 12 | 1 Cloud Scheduler job | `ads-reports-queue` |
+| **Ads API** | 12 | 1 Cloud Scheduler job + async check chain | `ads-reports-queue` (+ retry / check) |
+| **AMC** | Path to Conversion (weekly) | Weekly Scheduler → async poll | `amc-reports-queue` |
 
 ## Shared processing pattern
 
-Both pipelines follow the same high-level steps:
+SP and Ads follow the same high-level steps:
 
 1. **Dispatch** — Cloud Scheduler or manual call triggers batch endpoint
 2. **Queue** — Cloud Tasks creates individual worker tasks
-3. **Fetch** — Worker calls Amazon API (create → poll → download)
+3. **Fetch** — Worker calls Amazon API (create → poll/check → download)
 4. **Transform** — Schema-driven column mapping and aggregation
 5. **Upsert** — Staging table + MERGE into BigQuery
 6. **Track** — Status row written to `report_status` or `ads_report_status`
+
+Ads defaults to **async create-then-check** so workers do not hold the queue for Amazon's generation latency. AMC uses the same poll-and-reschedule pattern.
 
 Detailed diagrams: [Data Flow](/architecture/data-flow)
 
@@ -27,9 +32,11 @@ Detailed diagrams: [Data Flow](/architecture/data-flow)
 | Use case | SP endpoint | Ads endpoint |
 |----------|-------------|--------------|
 | Daily scheduled batch | `POST /sp/reports/{type}/process-all-brands` | `POST /ads/dispatch` |
+| Gap-fill Remaining cells | `POST /sp/dispatch-remaining` | `POST /ads/dispatch-remaining` |
 | Single brand troubleshooting | `POST /sp/brands/{account}/process-all-reports` | Filter on dispatch |
 | Manual inline run | `POST /accounts/{account}/reports/{type}` | `POST /ads/reports/process` |
-| Retry failures | Re-dispatch failed brand | `POST /ads/reports/retry-failed` |
+| Retry failures | Gap-fill / re-dispatch | `POST /ads/reports/retry-failed` |
+| Weekly AMC | — | `POST /amc/dispatch` |
 
 Decision tree: [API Endpoints](/reference/endpoints#decision-tree)
 
@@ -39,9 +46,11 @@ Decision tree: [API Endpoints](/reference/endpoints#decision-tree)
 |-------|------|
 | SP pipeline details | [SP Pipeline](/pipelines/sp-pipeline) |
 | Ads pipeline details | [Ads Pipeline](/pipelines/ads-pipeline) |
+| AMC Path to Conversion | [AMC Pipeline](/pipelines/amc-pipeline) |
 | Worker internals | [Data Flow & Processing](/pipelines/data-flow-processing) |
 | Scheduling | [Batch Scheduling](/pipelines/batch-scheduling) |
 | BigQuery storage | [BigQuery & Datasets](/reference/bigquery) |
+| Control panels | [SP](/operations/sp-control-panel) · [Ads](/operations/ads-control-panel) |
 
 ## Related pages
 

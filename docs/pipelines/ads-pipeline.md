@@ -1,28 +1,37 @@
 # Ads Pipeline
 
-Guide to the Ads API → BigQuery pipeline: dispatch, workers, incremental loading, and failure recovery.
+**Last updated:** 2026-07-20
+
+Guide to the Ads API → BigQuery pipeline: dispatch, async workers, incremental loading, and failure recovery.
 
 ## Architecture
 
 ```
 Cloud Scheduler → /ads/dispatch → ads-reports-queue → /ads/worker/process
+                                                          ↓ (create report, return)
+                                              /ads/worker/check-report (poll chain)
                                                           ↓
                                               Amazon Ads API → BigQuery
                                                           ↓
                                               ads_report_status table
 ```
 
+Default processing is **async poll-and-reschedule** (`ADS_ASYNC_POLL_ENABLED=true`). See [Ads Async Poll](/developer/design-decisions/ads-async-poll).
+
 Diagrams: [Data Flow](/architecture/data-flow)
 
 ## Data flow
 
-1. **Dispatch** — Cloud Scheduler calls `/ads/dispatch`
-2. **Worker** — idempotency check (skip if COMPLETED in last 20 h)
-3. **Incremental load** — query BigQuery max date; fetch from `(last_date - 3 days)` to today (max 31-day window)
-4. **Fetch** — create async report → poll ~60 s → download GZIP JSON
-5. **Transform** — `AdsReportProcessor` aggregates and splits into tables
-6. **Upsert** — `BigQueryClient.upsert_ads_report_data` (staging + MERGE)
-7. **Track** — update `ads_report_status`
+1. **Dispatch** — Cloud Scheduler calls `/ads/dispatch` (tasks staggered by `ADS_DISPATCH_STAGGER_SECONDS`)
+2. **Request phase** — worker creates report(s), writes RUNNING, enqueues first check task, returns in seconds
+3. **Check phase** — `/ads/worker/check-report` polls once per invocation; re-enqueues with backoff until COMPLETED / timeout / recreate limit
+4. **Incremental load** — date range resolved up front; default `(last_date - 3 days)` → today (max 31-day window)
+5. **Transform / upsert** — existing `AdsReportProcessor` + MERGE path
+6. **Track** — `ads_report_status` (COMPLETED with end-to-end duration)
+
+Workers skip if **COMPLETED** in the last 20 hours or **RUNNING** within `ADS_RUNNING_SKIP_MINUTES` (default 120).
+
+Set `ADS_ASYNC_POLL_ENABLED=false` to fall back to the synchronous poll loop (operational override only).
 
 ## Production dispatch
 
@@ -31,15 +40,23 @@ curl -X POST "http://localhost:8080/api/v1/ads/dispatch"
 curl -X POST "http://localhost:8080/api/v1/ads/dispatch?accounts_filter=Bumbleride&report_types=spCampaigns"
 ```
 
-Creates one Cloud Task per account × report type (up to ~348 tasks with 26 accounts × 12 types).
+Creates one Cloud Task per account × report type.
 
-Worker endpoint (Cloud Tasks only):
+For control-panel “finish the day” gap-fill (Remaining cells only), prefer:
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/ads/dispatch-remaining?dry_run=true"
+curl -X POST "http://localhost:8080/api/v1/ads/dispatch-remaining"
+```
+
+See [Ads Control Panel](/operations/ads-control-panel).
+
+Worker endpoints (Cloud Tasks only):
 
 ```http
 POST /api/v1/ads/worker/process
+POST /api/v1/ads/worker/check-report
 ```
-
-Body: `{ "account_name": "Bumbleride", "report_type": "spCampaigns" }`
 
 ## Inline batch (no Cloud Tasks)
 
@@ -61,7 +78,7 @@ Manual mode: pass `start_date` / `end_date` on dispatch or worker payload.
 
 ## Special handling: spAdvertisedProduct
 
-This report type fetches ENABLED, PAUSED, and ARCHIVED statuses separately and concatenates DataFrames before upsert.
+Creates ENABLED, PAUSED, and ARCHIVED reports together in the request phase; the check chain waits for all three before download/transform.
 
 ## Scheduling
 
@@ -82,6 +99,9 @@ See [Scheduled Jobs](/operations/scheduled-jobs).
 ## Failure recovery
 
 ```bash
+# Coverage matrix
+curl "http://localhost:8080/api/v1/ads-report-status/matrix"
+
 # Query failures
 curl "http://localhost:8080/api/v1/ads-report-status/failed?days_back=1"
 
@@ -89,12 +109,13 @@ curl "http://localhost:8080/api/v1/ads-report-status/failed?days_back=1"
 curl -X POST "http://localhost:8080/api/v1/ads/reports/retry-failed?expire_stuck=true"
 ```
 
-Full guide: [Failed Reports](/operations/failed-reports)
+Full guide: [Failed Reports](/operations/failed-reports) · [Ads Control Panel](/operations/ads-control-panel)
 
 ## Monitoring
 
 ```bash
 curl "http://localhost:8080/api/v1/ads-report-status/summary"
+curl "http://localhost:8080/api/v1/ads-report-status/matrix"
 curl "http://localhost:8080/api/v1/ads-report-status/recent"
 ```
 
@@ -107,11 +128,13 @@ See [Monitoring](/operations/monitoring).
 | 429 throttling | Queue rate limits handle backoff; use retry queue |
 | Stuck RUNNING | `POST /ads/reports/expire-stuck` then `retry-failed` |
 | Empty report | Check date range; verify profile ID |
-| Duplicate processing | Idempotency guard skips recent COMPLETED tasks |
+| Duplicate processing | Idempotency skips recent COMPLETED; use `dispatch-remaining?force=true` for Remaining cells only |
+| Long batch / deadline overruns | Confirm `ADS_ASYNC_POLL_ENABLED=true` (async check chain) |
 
 ## Related pages
 
 - [Ads API Integration](/integrations/ads-api)
 - [Ads Report Types](/reference/ads-report-types)
+- [Ads Control Panel](/operations/ads-control-panel)
 - [Batch Scheduling](/pipelines/batch-scheduling)
 - [Data Flow & Processing](/pipelines/data-flow-processing)

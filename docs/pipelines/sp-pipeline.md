@@ -1,5 +1,7 @@
 # SP Pipeline
 
+**Last updated:** 2026-07-20
+
 Guide to the SP-API → BigQuery pipeline: batch dispatch, inline runs, date ranges, and monitoring.
 
 ## Architecture flow
@@ -91,6 +93,17 @@ curl -X POST "http://localhost:8080/api/v1/sp/brands/OE/process-all-reports?load
 | `returns` | GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE + GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA | `{account}_returns` |
 | `fba_inventory` | GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA | `{account}_fba_inventory` |
 | `merchants_listings_fyp` | GET_MERCHANTS_LISTINGS_FYP_REPORT | `{account}_merchants_listings_fyp` |
+
+## Gap-fill Remaining cells
+
+Prefer `dispatch-remaining` for control-panel “finish the day” so you do not re-queue Accomplished cells:
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/sp/dispatch-remaining?dry_run=true"
+curl -X POST "http://localhost:8080/api/v1/sp/dispatch-remaining"
+```
+
+See [SP Control Panel](/operations/sp-control-panel).
 
 ## Worker pipeline
 
