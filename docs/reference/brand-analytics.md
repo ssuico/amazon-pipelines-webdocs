@@ -1,6 +1,6 @@
 # Brand Analytics API
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 Curated per-brand product metrics from `agg_tables_v2` for the frontend analytics dashboard. This is a **read API** over aggregated BigQuery tables — not a report-ingestion pipeline.
 
@@ -13,57 +13,80 @@ Implementation: `app/routes/brand_analytics.py`, `app/services/analytics/brand_a
 |---------|---------|
 | `BIGQUERY_AGG_DATASET` | `agg_tables_v2` |
 
-Full dataset ID: `{GCP_PROJECT_ID}.{BIGQUERY_AGG_DATASET}`
+## Date window (all metrics endpoints)
+
+Inclusive UTC calendar range on window-sensitive endpoints:
+
+| Param | Required | Notes |
+|-------|----------|-------|
+| `start_date` | with `end_date` | `YYYY-MM-DD` |
+| `end_date` | with `start_date` | `YYYY-MM-DD` |
+| `window` | no | Trailing N days (`1–90`) ending on the brand’s latest available day. Default `90` when omitted and no dates are set |
+
+**Precedence:** both dates → else `window` → else default `90`.  
+**Validation (`400`):** only one of the date pair; `start_date > end_date`; span > 90 inclusive days.  
+Ranges outside available data are clamped; no overlap → `200` with empty results and `window: 0`.
+
+Responses echo `window`, `start_date`, `end_date`, `available_start_date`, `available_end_date`.
 
 ## Endpoints
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `GET` | `/brand-analytics/brands` | Brand identifiers (SP + Ads whitelist); cached 10 min |
-| `GET` | `/brand-analytics/{brand}/child-metrics` | Paginated child-SKU metrics |
-| `GET` | `/brand-analytics/{brand}/parent-metrics` | Paginated parent-ASIN metrics |
-| `GET` | `/brand-analytics/{brand}/time-series` | Daily rows (all table columns) |
-| `GET` | `/brand-analytics/{brand}/time-series/asins` | Distinct ASIN picker options |
-| `GET` | `/brand-analytics/health` | Dataset connectivity check |
+| `GET` | `/brand-analytics/brands` | Brand list: AccountConfig ∪ BQ-discovered complete `_90` trios (includes OE sub-brands) |
+| `GET` | `/brand-analytics/accounts/{account}/brands` | Sub-brands for multi-brand parents (currently `OE` → e.g. Danner, Thorogood) |
+| `GET` | `/brand-analytics/{brand}/child-metrics` | Paginated child-SKU metrics (all source columns) |
+| `GET` | `/brand-analytics/{brand}/parent-metrics` | Paginated parent-ASIN metrics (all source columns) |
+| `GET` | `/brand-analytics/{brand}/sales-distribution` | Parent/standalone sales mix + concentration for Brand Overview |
+| `GET` | `/brand-analytics/{brand}/summary` | Brand-wide daily KPI summary (one row per day) |
+| `GET` | `/brand-analytics/{brand}/parent/time-series` | Daily parent-grain time series (replaces child `/time-series`) |
+| `GET` | `/brand-analytics/{brand}/parent/time-series/asins` | Parent ASIN picker (sales-ranked) |
+| `GET` | `/brand-analytics/health` | Dataset connectivity |
 
-### Shared query params (metrics)
+### Child / parent metrics
 
-| Param | Default | Notes |
-|-------|---------|-------|
-| `window` | `90` | Only `90` available today |
-| `page` | `1` | Ignored when `asin` is set on time-series |
-| `page_size` | `100` | Allowed: 10, 30, 50, 100, 200, 500, 1000 |
-| `search` | — | Substring filter on ASIN / parentAsin |
+- Return **every** source-table column under exact BigQuery names; `available_columns` lists schema order.
+- Prefer `total_sales_90d`, `spend_90d`, etc. for 90-day rollups (legacy short aliases are obsolete).
+- Shared params: date window, `page`, `page_size` (10…1000), `search` on ASIN / parentAsin.
 
-### Time-series ASIN detail
+### Sales distribution
+
+Chart-ready ranked parents/standalones. `totalSales` is **catalog** ordered-product sales (not ads sales). `concentration` is over the full population; `limit` only truncates `items`.
+
+### Summary
+
+One pre-aggregated row per calendar day for Overview KPI cards / Daily Signals. Includes page-view channel fields and parent/child/standalone catalog counts where available.
+
+### Parent time-series
 
 ```bash
-# 1. Populate picker
-curl "http://localhost:8080/api/v1/brand-analytics/Vertx/time-series/asins?search=B0G&limit=20"
+# Picker (sales-ranked)
+curl "http://localhost:8080/api/v1/brand-analytics/Vertx/parent/time-series/asins?search=B0G&limit=20"
 
-# 2. Full daily history for one ASIN (oldest → newest; pagination ignored)
-curl "http://localhost:8080/api/v1/brand-analytics/Vertx/time-series?asin=B0G7LWPJMT"
+# Full daily history for one parent ASIN
+curl "http://localhost:8080/api/v1/brand-analytics/Vertx/parent/time-series?asin=B0G7LWPJMT"
 ```
 
-When `asin` is set, the API returns every daily row for that product with `available_columns` listing the full table schema (~77 columns).
+The former child `/time-series` and `/time-series/asins` routes are replaced by these parent-grain endpoints.
 
 ## Errors
 
 | Status | Condition |
 |--------|-----------|
-| `404` | Unknown brand, or brand has no `{window}` metrics table yet |
-| `422` | Invalid `window` / `page_size` |
+| `400` | Invalid date window |
+| `404` | Unknown brand, or no metrics tables yet |
+| `422` | Invalid `page_size` / enum |
 | `500` | BigQuery / query failure |
 
 ## Known limitations
 
-- Only `window=90` tables exist in `agg_tables_v2` today.
-- Not every brand from `/brands` has agg tables onboarded yet (querying returns `404`).
-- `computed_metrics` is always `{}` (reserved for future derived metrics).
-- `/time-series/asins` is `limit`-capped (default 100), not paginated — use `search` with typeahead.
+- Source tables remain the `_90` trio per brand; `window`/`start_date` roll up within available data.
+- Not every AccountConfig brand has agg tables; OE sub-brands appear via BQ discovery without per-label SP creds.
+- `computed_metrics` remains `{}` (reserved).
 
 ## Related pages
 
+- [Conversational Analytics](/reference/conversational-analytics)
+- [Listings Health](/reference/listings-health)
 - [BigQuery & Datasets](/reference/bigquery)
 - [API Endpoints](/reference/endpoints)
-- Source design logs in `amazon-pipelines/design-log/2026-07-02-*` through `2026-07-09-*`

@@ -1,6 +1,6 @@
 # Environment Variables
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 Complete reference for configuration loaded by `Settings` in `app/config.py`. Values are read from `.env` locally or injected via Cloud Run / Secret Manager in production.
 
@@ -53,15 +53,6 @@ See `app/config.py` for the full list of brand-specific fields.
 
 ## Ads API credentials
 
-### OE
-
-| Env var | Description |
-|---------|-------------|
-| `OE_ADS_CLIENT_ID` | OE Ads client ID |
-| `OE_ADS_CLIENT_SECRET` | OE Ads client secret |
-| `OE_ADS_REFRESH_TOKEN` | OE Ads refresh token |
-| `OE_ADS_PROFILE` | OE Ads profile ID |
-
 ### CP shared app
 
 | Env var | Description |
@@ -70,11 +61,13 @@ See `app/config.py` for the full list of brand-specific fields.
 | `CP_ADS_CLIENT_SECRET` | Shared CP Ads client secret |
 | `CP_ADS_REFRESH_TOKEN` | Shared CP Ads refresh token |
 
+Standalone `OE_ADS_*` vars were removed — OE Ads uses `OEUS` + `OE_US_PROFILE` on the CP Ads app.
+
 ### Brand profile IDs
 
 Each Ads brand has a profile env var, e.g.:
 
-`BUMBLERIDE_US_PROFILE`, `HEARTLAND_US_PROFILE`, `COLE_HAAN_US_PROFILE`, etc.
+`BUMBLERIDE_US_PROFILE`, `HEARTLAND_US_PROFILE`, `OE_US_PROFILE`, etc.
 
 Mapped via `CP_ADS_BRAND_PROFILES` in `app/config.py`.
 
@@ -157,6 +150,16 @@ See [AMC Pipeline](/pipelines/amc-pipeline).
 | `AMC_POLL_INTERVAL_SECONDS` | `60` | Check-execution spacing |
 | `AMC_CHECK_MAX_ATTEMPTS` | `90` | Max check attempts |
 | `AMC_EXECUTION_TIMEOUT_SECONDS` | `3600` | Execution timeout |
+
+## Conversational Analytics
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `CONVERSATIONAL_ANALYTICS_LOCATION` | `global` | Data agent / conversation region |
+| `DATA_AGENT_ID_PREFIX` | `brand-agg-` | Agent id prefix (`{prefix}{brand_lower}`) |
+| `CONVERSATIONAL_ANALYTICS_PILOT_BRAND` | `Vertx` | Default brand for provision script |
+
+Reuses `GCP_PROJECT_ID` and `BIGQUERY_AGG_DATASET`. See [Conversational Analytics](/reference/conversational-analytics).
 
 ## Secret Manager
 
