@@ -12,6 +12,12 @@ export default withMermaid(
     markdown: {
       lineNumbers: true,
     },
+    // Windows: avoid c: vs C: path mismatch in resolvePageImports (VitePress #4984 / #2351)
+    vite: {
+      resolve: {
+        preserveSymlinks: true,
+      },
+    },
     head: [
       ['link', { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' }],
       ['link', { rel: 'icon', href: '/favicon.ico', sizes: 'any' }],
@@ -55,6 +61,8 @@ export default withMermaid(
           items: [
             { text: 'API Endpoints', link: '/reference/endpoints' },
             { text: 'Brand Analytics', link: '/reference/brand-analytics' },
+            { text: 'Conversational Analytics', link: '/reference/conversational-analytics' },
+            { text: 'Listings Health', link: '/reference/listings-health' },
             { text: 'Environment Variables', link: '/reference/environment-variables' },
             { text: 'SP Report Types', link: '/reference/sp-report-types' },
             { text: 'Ads Report Types', link: '/reference/ads-report-types' },
@@ -150,6 +158,8 @@ export default withMermaid(
               { text: 'Overview', link: '/reference/' },
               { text: 'API Endpoints', link: '/reference/endpoints' },
               { text: 'Brand Analytics', link: '/reference/brand-analytics' },
+              { text: 'Conversational Analytics', link: '/reference/conversational-analytics' },
+              { text: 'Listings Health', link: '/reference/listings-health' },
               { text: 'Environment Variables', link: '/reference/environment-variables' },
               { text: 'SP Report Types', link: '/reference/sp-report-types' },
               { text: 'Ads Report Types', link: '/reference/ads-report-types' },
@@ -180,6 +190,8 @@ export default withMermaid(
                   { text: 'AMC Path to Conversion', link: '/developer/design-decisions/amc-path-to-conversion' },
                   { text: 'Ads Async Poll', link: '/developer/design-decisions/ads-async-poll' },
                   { text: 'Force Gap-Fill', link: '/developer/design-decisions/dispatch-remaining-force' },
+                  { text: 'SP Incremental Dispatch', link: '/developer/design-decisions/sp-incremental-dispatch' },
+                  { text: 'Remove OE Ads', link: '/developer/design-decisions/remove-oe-ads' },
                   { text: 'Cloud Run Memory', link: '/developer/design-decisions/cloud-run-memory' },
                 ],
               },
