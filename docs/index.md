@@ -28,7 +28,7 @@ features:
     details: Schema-driven MERGE into SP, Ads, AMC, and agg_tables_v2 datasets with status tracking.
   - icon: 🔍
     title: Status Dashboards
-    details: Coverage matrices, failed reports, activity logs, and Brand Analytics read APIs.
+    details: Coverage matrices, failed reports, Brand Analytics, Conversational Analytics, and Listings Health APIs.
   - icon: 📅
     title: Scheduled Jobs
     details: Cloud Scheduler triggers daily batch dispatch — staggered SP jobs and a single Ads dispatch.
@@ -37,7 +37,7 @@ features:
     details: FastAPI with OpenAPI at /docs, modular schemas, and operational scripts for backfill and retry.
 ---
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 ## Who is this documentation for?
 

@@ -1,6 +1,6 @@
 # FAQ
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 Frequently asked questions about the Amazon Pipelines platform.
 
@@ -8,7 +8,7 @@ Frequently asked questions about the Amazon Pipelines platform.
 
 ### What does Amazon Pipelines do?
 
-It fetches reports from Amazon SP-API, Amazon Ads API, and Amazon Marketing Cloud (AMC), transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate batch processing. A Brand Analytics read API serves curated metrics from `agg_tables_v2`.
+It fetches reports from Amazon SP-API, Amazon Ads API, and Amazon Marketing Cloud (AMC), transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate batch processing. Brand Analytics, Conversational Analytics, and Listings Health APIs serve curated metrics from BigQuery.
 
 ### How many report types are supported?
 
@@ -24,11 +24,15 @@ The running Cloud Run service exposes OpenAPI at `/docs`. This VitePress site co
 
 ### What's the difference between OE and CP brands?
 
-OE has its own Amazon developer app credentials. CP portfolio SP brands share Research-app LWA client credentials — each brand only needs its own refresh token (SP) and Ads profile ID. See [Credentials](/onboarding/credentials).
+OE has its own Amazon developer app credentials for SP. CP portfolio SP brands share Research-app LWA client credentials — each brand only needs its own refresh token (SP) and Ads profile ID. See [Credentials](/onboarding/credentials).
 
 ### Do we still use CP_SP client credentials?
 
 No. As of the June 2026 migration, portfolio SP brands use `RESEARCH_APP_SP_CLIENT_ID/SECRET` directly. Ads still uses `CP_ADS_*`.
+
+### Do we still use OE_ADS_* credentials?
+
+No. Standalone OE Ads credentials were removed. Use account `OEUS` with `OE_US_PROFILE` on the CP Ads app. See [Remove OE Ads](/developer/design-decisions/remove-oe-ads).
 
 ### Why doesn't my brand appear in `/accounts`?
 
@@ -39,6 +43,13 @@ The brand's refresh token env var is likely missing or not wired in `config.py`.
 ### What's the difference between batch dispatch and inline endpoints?
 
 Batch dispatch (`process-all-brands`, `/ads/dispatch`) creates Cloud Tasks for parallel async processing. Inline endpoints (`/accounts/{account}/reports/{type}`) run synchronously in the HTTP request — better for debugging.
+
+### When should I use `/sp/dispatch` vs `/sp/dispatch-remaining`?
+
+- `/sp/dispatch` — incremental catch-up for **all** brands × types (fills missing days from MAX(Date), capped).
+- `/sp/dispatch-remaining` — only today’s **Remaining** matrix cells (control-panel gap-fill). Also defaults to incremental date mode.
+
+See [SP Incremental Dispatch](/developer/design-decisions/sp-incremental-dispatch).
 
 ### Why does Ads use incremental loading?
 
@@ -64,7 +75,11 @@ SP skips if a duplicate exists for the same date range. Ads skips if COMPLETED w
 
 ### How do I retry a failed SP report?
 
-Re-dispatch for the specific brand: `POST /sp/reports/{type}/process-all-brands?accounts_filter={brand}`
+Re-dispatch for the specific brand: `POST /sp/reports/{type}/process-all-brands?accounts_filter={brand}` — or use `/sp/dispatch-remaining?include_failed=true` for Remaining/Failed cells.
+
+### How do I clear stuck SP In Progress rows?
+
+`POST /api/v1/sp/reports/expire-stuck` then gap-fill with `dispatch-remaining`.
 
 ### How do I retry failed Ads reports?
 
