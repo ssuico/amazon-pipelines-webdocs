@@ -1,21 +1,12 @@
 # Amazon Ads API Integration
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 Amazon Ads API integration supports **12 report types** across Sponsored Products (SP), Sponsored Brands (SB), and Sponsored Display (SD), with BigQuery persistence, incremental loading, and Cloud Tasks-based daily dispatch.
 
 Default worker path is **async create-then-check** (`ADS_ASYNC_POLL_ENABLED=true`). See [Ads Pipeline](/pipelines/ads-pipeline) and [Ads Async Poll](/developer/design-decisions/ads-async-poll). Control-panel gap-fill: [Ads Control Panel](/operations/ads-control-panel).
 
 ## Authentication
-
-### OE account
-
-```bash
-OE_ADS_CLIENT_ID=...
-OE_ADS_CLIENT_SECRET=...
-OE_ADS_REFRESH_TOKEN=...
-OE_ADS_PROFILE=...
-```
 
 ### CP brands (shared credentials + profile per brand)
 
@@ -24,8 +15,11 @@ CP_ADS_CLIENT_ID=...
 CP_ADS_CLIENT_SECRET=...
 CP_ADS_REFRESH_TOKEN=...
 BUMBLERIDE_US_PROFILE=...
+OE_US_PROFILE=...          # OE Ads account key is OEUS (not OE)
 # ... one {BRAND}_US_PROFILE per CP Ads brand
 ```
+
+Standalone `OE_ADS_*` credentials were removed. Use explicit account names (e.g. `OEUS`); there is no silent default. See [Remove OE Ads](/developer/design-decisions/remove-oe-ads).
 
 List configured accounts:
 

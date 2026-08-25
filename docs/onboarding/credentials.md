@@ -1,6 +1,6 @@
 # Credentials & Authorization
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 How Amazon Pipelines authenticates with Amazon APIs and manages multi-account credentials.
 
@@ -16,12 +16,13 @@ Source of truth: `app/config.py` (`Settings` and `AccountConfig`).
 
 ## Credential models
 
-### OE (standalone)
+### OE (standalone SP)
 
-Uses its own client ID, secret, and refresh token for both SP and Ads:
+Uses its own client ID, secret, and refresh token for **SP-API only**:
 
 - `OE_SP_CLIENT_ID`, `OE_SP_CLIENT_SECRET`, `OE_SP_REFRESH_TOKEN`
-- `OE_ADS_CLIENT_ID`, `OE_ADS_CLIENT_SECRET`, `OE_ADS_REFRESH_TOKEN`, `OE_ADS_PROFILE`
+
+Standalone `OE_ADS_*` credentials were **removed**. OE Ads traffic uses the CP Ads path as **`OEUS`** (`OE_US_PROFILE`). Do not alias `OE` → `OEUS` (different BigQuery table families).
 
 ### CP portfolio brands (SP-API)
 
@@ -39,7 +40,9 @@ All CP Ads brands share:
 
 - `CP_ADS_CLIENT_ID`, `CP_ADS_CLIENT_SECRET`, `CP_ADS_REFRESH_TOKEN`
 
-Each brand adds a profile ID, e.g. `BUMBLERIDE_US_PROFILE`.
+Each brand adds a profile ID, e.g. `BUMBLERIDE_US_PROFILE`, `OE_US_PROFILE` (for `OEUS`).
+
+Ads callers must pass an explicit account name — there is no silent default.
 
 ### AMC (Path to Conversion)
 
