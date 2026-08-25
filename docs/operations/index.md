@@ -1,6 +1,6 @@
 # Operations Runbook
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
 Operational procedures for monitoring, incident response, and maintenance of the Amazon Pipelines platform.
 
@@ -26,12 +26,26 @@ Operational procedures for monitoring, incident response, and maintenance of the
    curl -X POST "$URL/api/v1/sp/dispatch-remaining?dry_run=true"
    curl -X POST "$URL/api/v1/sp/dispatch-remaining?include_failed=true"
    ```
-3. Or re-dispatch one type for a brand:
+3. Or incremental catch-up for all brands × types:
+   ```bash
+   curl -X POST "$URL/api/v1/sp/dispatch?dry_run=true"
+   curl -X POST "$URL/api/v1/sp/dispatch"
+   ```
+4. Or re-dispatch one type for a brand:
    ```bash
    curl -X POST "$URL/api/v1/sp/reports/{type}/process-all-brands?accounts_filter={brand}&load_last_day=true"
    ```
-4. If credential error (401), verify Secret Manager binding and token validity
-5. Check Cloud Run logs for worker errors
+5. If credential error (401), verify Secret Manager binding and token validity
+6. Check Cloud Run logs for worker errors
+
+### SP stuck In Progress
+
+1. Expire stuck reports:
+   ```bash
+   curl -X POST "$URL/api/v1/sp/reports/expire-stuck"
+   ```
+2. Gap-fill Remaining cells with `dispatch-remaining`
+3. See [SP Control Panel](/operations/sp-control-panel)
 
 ### Ads stuck in RUNNING
 

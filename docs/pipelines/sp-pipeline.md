@@ -1,8 +1,8 @@
 # SP Pipeline
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-08-26
 
-Guide to the SP-API → BigQuery pipeline: batch dispatch, inline runs, date ranges, and monitoring.
+Guide to the SP-API → BigQuery pipeline: batch dispatch, incremental catch-up, inline runs, date ranges, and monitoring.
 
 ## Architecture flow
 
@@ -63,6 +63,15 @@ curl -X POST "http://localhost:8080/api/v1/sp/reports/orders/process-all-brands?
 }
 ```
 
+## Incremental catch-up (`/sp/dispatch`)
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/sp/dispatch?dry_run=true"
+curl -X POST "http://localhost:8080/api/v1/sp/dispatch"
+```
+
+Dispatches one Cloud Task per account × report type. Default date mode is **incremental** (missing days from `MAX(Date)`, capped). See [SP Incremental Dispatch](/developer/design-decisions/sp-incremental-dispatch) and [SP Control Panel](/operations/sp-control-panel).
+
 ## Single brand, single report (inline)
 
 ```bash
@@ -96,12 +105,14 @@ curl -X POST "http://localhost:8080/api/v1/sp/brands/OE/process-all-reports?load
 
 ## Gap-fill Remaining cells
 
-Prefer `dispatch-remaining` for control-panel “finish the day” so you do not re-queue Accomplished cells:
+Prefer `dispatch-remaining` for control-panel “finish the day” so you do not re-queue Accomplished cells. Defaults to incremental date mode (same as `/sp/dispatch`):
 
 ```bash
 curl -X POST "http://localhost:8080/api/v1/sp/dispatch-remaining?dry_run=true"
 curl -X POST "http://localhost:8080/api/v1/sp/dispatch-remaining"
 ```
+
+Stuck **In Progress** rows: `POST /sp/reports/expire-stuck` then gap-fill.
 
 See [SP Control Panel](/operations/sp-control-panel).
 
@@ -109,7 +120,7 @@ See [SP Control Panel](/operations/sp-control-panel).
 
 `process_and_upsert_report` executes:
 
-1. **Resolve date range** — flags or explicit dates (snapshot types skip the loop)
+1. **Resolve date range** — flags, explicit dates, or incremental from MAX(Date) (snapshot types skip the loop)
 2. **Idempotency check** — skip duplicate recent report for same date range or snapshot date
 3. **Fetch** — create report → poll (~30 s interval) → download (or reuse recent DONE report for snapshots)
 4. **Transform** — column mappings + aggregations via schema config
