@@ -1,6 +1,6 @@
 # FAQ
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Frequently asked questions about the Amazon Pipelines platform.
 
@@ -8,13 +8,14 @@ Frequently asked questions about the Amazon Pipelines platform.
 
 ### What does Amazon Pipelines do?
 
-It fetches reports from Amazon SP-API, Amazon Ads API, and Amazon Marketing Cloud (AMC), transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate batch processing. Brand Analytics, Conversational Analytics, and Listings Health APIs serve curated metrics from BigQuery.
+It fetches reports from Amazon SP-API, Amazon Ads API, Amazon Marketing Cloud (AMC), and Vendor Central, transforms them using schema-driven pipelines, and upserts the data to BigQuery. Cloud Scheduler and Cloud Tasks orchestrate batch processing. Brand Analytics, Conversational Analytics, and Listings Health APIs serve curated metrics from BigQuery. A curated MCP server exposes the same HTTP API to agents.
 
 ### How many report types are supported?
 
-- **SP-API:** 7 report types (orders, inventory, listings, sales, returns, FBA, FYP)
+- **SP-API:** 7 seller report types (orders, inventory, listings, sales, returns, FBA, FYP), plus a Vertx-only weekly SCP/SQP pilot
+- **Vendor Central:** 6 retail analytics reports (Lenox first)
 - **Ads API:** 12 report types across SP, SB, and SD
-- **AMC:** Path to Conversion (weekly; Vertx pilot)
+- **AMC:** Path to Conversion (weekly, D+7 lag; Vertx pilot)
 
 ### Where is the live API documentation?
 
@@ -53,7 +54,7 @@ See [SP Incremental Dispatch](/developer/design-decisions/sp-incremental-dispatc
 
 ### Why does Ads use incremental loading?
 
-To avoid re-fetching all historical data daily. The worker queries BigQuery for the max date and fetches from 3 days before that date to today.
+To avoid re-fetching all historical data daily. The worker queries BigQuery for the max date and fetches from 8 days before that date through today so 7-day attribution can mature.
 
 ### Why are SP jobs staggered but Ads uses one dispatch?
 

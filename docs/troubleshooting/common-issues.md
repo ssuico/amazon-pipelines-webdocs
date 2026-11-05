@@ -1,6 +1,6 @@
 # Common Issues
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Consolidated troubleshooting guide for the most frequent Amazon Pipelines problems.
 
@@ -57,7 +57,7 @@ Consolidated troubleshooting guide for the most frequent Amazon Pipelines proble
 | Problem | Solution |
 |---------|----------|
 | Cloud Build fails on secrets | Verify Secret Manager binding names match env var names |
-| 503 on first request | Cold start with min-instances=0 — retry after 10 s |
+| 503 on first request | Warm min-instances is 1; a new revision can still miss the startup probe — retry |
 | OOM / container killed | Verify Cloud Run memory is 16 Gi (not 1 Gi) |
 | Scheduler job fails | Check OIDC SA has `run.invoker` role |
 | Cloud Tasks not reaching worker | Verify `CLOUD_RUN_SERVICE_URL` and OIDC SA |
