@@ -1,6 +1,6 @@
 # Ads Control Panel
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-11-05
 
 Dispatch, gap-fill, expire-stuck, and retry-failed for an Ads control UI. Parallel to [SP Control Panel](/operations/sp-control-panel).
 
@@ -54,7 +54,7 @@ Cartesian account × report_type onto `ads-reports-queue`, staggered by `ADS_DIS
 
 | Endpoint | Role |
 |----------|------|
-| `POST /ads/reports/expire-stuck` | RUNNING older than threshold → FAILED (`dry_run` supported) |
+| `POST /ads/reports/expire-stuck` | RUNNING older than threshold → FAILED. `force=true` skips the age check inside `lookback_hours`. `dry_run` supported. |
 | `POST /ads/reports/retry-failed` | FAILED last 24h → `ads-reports-retry-queue`; optional `expire_stuck=true` |
 
 Do not set `stuck_threshold_hours` below ~2 while async check chains are legitimate (Amazon generation can take 20–45+ minutes).

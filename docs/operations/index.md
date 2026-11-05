@@ -1,6 +1,6 @@
 # Operations Runbook
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Operational procedures for monitoring, incident response, and maintenance of the Amazon Pipelines platform.
 
@@ -14,7 +14,7 @@ Operational procedures for monitoring, incident response, and maintenance of the
 | Failed SP reports | `curl "$URL/api/v1/report-status/failed?days_back=1"` |
 | Failed Ads reports | `curl "$URL/api/v1/ads-report-status/failed?days_back=1"` |
 | Cloud Scheduler jobs | Verify 7 SP + 1 Ads (+ weekly AMC if enabled) jobs in GCP Console |
-| SP / Ads coverage matrix | `curl "$URL/api/v1/report-status/matrix"` · `curl "$URL/api/v1/ads-report-status/matrix"` |
+| SP / Ads / vendor coverage matrix | `curl "$URL/api/v1/report-status/matrix"` · `curl "$URL/api/v1/ads-report-status/matrix"` · `curl "$URL/api/v1/vendor-report-status/matrix"` |
 
 ## Incident playbooks
 

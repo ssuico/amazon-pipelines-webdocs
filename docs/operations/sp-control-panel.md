@@ -1,6 +1,6 @@
 # SP Control Panel
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Matrix coverage, incremental catch-up, gap-fill, expire-stuck, and batch dispatch for an SP-API control UI. Parallel to [Ads Control Panel](/operations/ads-control-panel).
 
@@ -103,7 +103,8 @@ Marks `REQUESTED` / `IN_QUEUE` / `IN_PROGRESS` rows older than the threshold as 
 | Param | Default | Description |
 |-------|---------|-------------|
 | `stuck_threshold_hours` | `2` | Active rows older than this → FAILED |
-| `lookback_hours` | `24` | Scan window |
+| `lookback_hours` | `24` | Scan window (max 168) |
+| `force` | `false` | Skip the age threshold; expire every in-flight row in the lookback |
 | `dry_run` | `false` | Preview only |
 
 Recovery: `expire-stuck` → `dispatch-remaining?include_failed=true`.
