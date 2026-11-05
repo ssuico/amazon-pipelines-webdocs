@@ -1,5 +1,7 @@
 # Cloud Run Deployment
 
+**Last updated:** 2026-11-05
+
 Deploy the Amazon Pipelines container to Google Cloud Run.
 
 ## Production configuration
@@ -14,11 +16,12 @@ From `cloudbuild.yaml`:
 | CPU | **4** |
 | Timeout | 3600 s |
 | Max instances | 10 |
-| Min instances | 0 |
+| Min instances | **1** |
+| Concurrency | **32** |
 | Port | 8080 |
 | Auth | `--allow-unauthenticated` |
 
-Memory was upgraded from 8 Gi to 16 Gi in May 2026 to handle concurrent worker processing. See [Design Decision: Cloud Run Memory](/developer/design-decisions/cloud-run-memory).
+Memory stays 16 Gi / 4 CPU. One warm instance and concurrency 32 keep Brand Analytics from failing on scale-to-zero cold starts. Non-health routers and MCP load after the process binds `:8080` so the startup TCP probe can pass. See [Cloud Run Warm Instance](/developer/design-decisions/cloud-run-warm-instance).
 
 ## Deploy via Cloud Build
 
@@ -84,7 +87,7 @@ curl $(gcloud run services describe amazon-pipelines --region us-central1 --form
 |-------|----------|
 | Build fails | Check Dockerfile and requirements.txt |
 | Deploy fails on secrets | Verify Secret Manager bindings in cloudbuild.yaml |
-| 503 on cold start | Normal for min-instances=0; first request may be slow |
+| 503 on first request after a new revision | Startup still imports routers after bind; retry if the probe is still warming |
 | OOM errors | Verify memory is 16Gi (not 1Gi from old docs) |
 | Health check fails | Check `/health` endpoint and port 8080 |
 
