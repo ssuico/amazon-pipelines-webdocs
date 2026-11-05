@@ -1,6 +1,6 @@
 # API Endpoints
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Full routing map for the Amazon Pipelines API. All job routes use prefix `/api/v1`.
 
@@ -25,9 +25,24 @@ Amazon Pipelines API  (/api/v1)
 │   ├── POST /sp/reports/{type}/process-all-brands  Dispatch Cloud Tasks (all brands)
 │   ├── POST /sp/dispatch                           Incremental all brands × types
 │   ├── POST /sp/dispatch-remaining                 Gap-fill Remaining matrix cells
-│   ├── POST /sp/reports/expire-stuck               Expire stuck IN_PROGRESS runs
+│   ├── POST /sp/reports/expire-stuck               Expire stuck IN_PROGRESS runs (?force=)
+│   ├── POST /sp/ba/dispatch                        Vertx weekly SCP/SQP
+│   ├── POST /sp/ba/worker/process                  SCP/SQP worker (internal)
 │   ├── POST /sp/worker/process-report              Cloud Tasks worker (internal)
 │   └── POST /sp/brands/{account}/process-all-reports  All reports for one brand
+│
+├── /vendor
+│   ├── GET  /vendor/accounts                       Vendor Central brands
+│   ├── POST /vendor/dispatch                       Incremental vendor reports
+│   ├── POST /vendor/dispatch-remaining             Remaining vendor matrix cells
+│   └── POST /vendor/worker/process-report          Vendor worker (internal)
+│
+├── /vendor-report-status
+│   └── GET  /matrix, /health
+│
+├── /pricing
+│   ├── GET  /pricing/competitive-summary/targets
+│   └── POST /pricing/competitive-summary/run       Hourly Featured Offer poll
 │
 ├── /ads
 │   ├── POST /ads/dispatch                          Daily dispatch (all accounts × types)
@@ -36,7 +51,7 @@ Amazon Pipelines API  (/api/v1)
 │   ├── POST /ads/worker/check-report               Cloud Tasks worker — poll phase
 │   ├── POST /ads/reports/process                   Inline batch (no queue)
 │   ├── POST /ads/reports/retry-failed              Retry failed Ads reports
-│   ├── POST /ads/reports/expire-stuck              Expire stuck RUNNING reports
+│   ├── POST /ads/reports/expire-stuck              Expire stuck RUNNING (?force=)
 │   ├── POST /ads/reports/{type}/create             Create async Ads report
 │   ├── GET  /ads/reports/{report_id}/status        Poll report status
 │   ├── GET  /ads/reports/{report_id}/download      Download report data
@@ -50,7 +65,13 @@ Amazon Pipelines API  (/api/v1)
 ├── /brand-analytics                                Curated agg_tables_v2 read API
 │   ├── GET  /brands, /accounts/{account}/brands, /health
 │   └── GET  /{brand}/child-metrics, parent-metrics, sales-distribution,
-│            summary, parent/time-series, parent/time-series/asins
+│            summary, order-geo, order-geo/time-series,
+│            parent/order-geo, child/order-geo,
+│            parent/time-series, child/time-series,
+│            parent/sp-target-performance, path-to-conversion
+│
+├── /competitive-landscape                          Monitored ASIN list + detail
+│   └── GET  /asins, /asins/{asin}
 │
 ├── /conversational-analytics                       NL chat over agg tables (SSE)
 │   ├── POST /conversations
@@ -59,7 +80,9 @@ Amazon Pipelines API  (/api/v1)
 │
 ├── /listings-health                                Listings Health widgets
 │   ├── GET  /brands, /fyp-coverage
-│   └── GET  /{brand}/standalone, suppressed, mismatched-attributes
+│   └── GET  /{brand}/standalone, suppressed, mismatched-attributes, variation-family
+│
+├── /mcp                                            Streamable HTTP MCP (bearer)
 │
 ├── /report-status                                 SP status dashboard API
 │   ├── GET  /recent, /failed, /activity, /statistics, /summary, /health, /matrix
@@ -106,8 +129,14 @@ What do you want to do?
 ├─ Listings Health widgets?
 │  └─ GET /listings-health/{brand}/…
 │
+├─ Vendor Central retail analytics?
+│  └─ POST /vendor/dispatch
+│
+├─ Featured Offer snapshot?
+│  └─ POST /pricing/competitive-summary/run
+│
 └─ Monitor pipeline health / coverage?
-   └─ GET /report-status/matrix  or  /ads-report-status/matrix
+   └─ GET /report-status/matrix, /ads-report-status/matrix, or /vendor-report-status/matrix
 ```
 
 ## Comparison matrix
@@ -164,5 +193,7 @@ Cloud Scheduler → POST /amc/dispatch
 - [Brand Analytics](/reference/brand-analytics)
 - [Conversational Analytics](/reference/conversational-analytics)
 - [Listings Health](/reference/listings-health)
+- [MCP Server](/reference/mcp)
+- [Vendor Pipeline](/pipelines/vendor-pipeline)
 - [AMC Pipeline](/pipelines/amc-pipeline)
 - [Monitoring](/operations/monitoring)

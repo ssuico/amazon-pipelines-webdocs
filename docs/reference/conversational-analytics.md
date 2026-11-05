@@ -1,6 +1,6 @@
 # Conversational Analytics API
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Natural-language chat over curated `agg_tables_v2` brand tables via Google Conversational Analytics (`google-cloud-geminidataanalytics`). Ask in plain English; receive streamed text, tabular data, and Vega-Lite chart specs. Generated SQL is **never** exposed to clients.
 
@@ -8,9 +8,11 @@ Base path: `/api/v1/conversational-analytics`
 Implementation: `app/routes/conversational_analytics.py`, `app/services/analytics/conversational_agent_service.py`  
 Provision: `scripts/provision_brand_data_agent.py`
 
-## MVP scope
+## Scope
 
-One pilot brand at a time. A brand’s data agent must be provisioned before chat works — unprovisioned brands return `404`.
+A brand’s data agent must be provisioned before chat works — unprovisioned brands return `404`. Provisioned targets include the Vertx pilot, each complete OE sub-brand trio, OE All-brands (`brand-agg-oe` over three union views with a `sub_brand` column), Hybrids All-brands (`brand-agg-hybrid`), and Hybrids sub-brands (`brand-agg-hybrid-vertx`, `brand-agg-hybrid-tru-spec`). Dedicated `Vertx` / `TruSpec` agents stay on `vertx_*` / `tru_spec_*`, not the OE twins.
+
+Ad-rate instructions use **7-day** attribution columns. Re-run provisioning after attribution or column changes.
 
 ## Configuration
 
@@ -26,9 +28,12 @@ Reuses `GCP_PROJECT_ID` and `BIGQUERY_AGG_DATASET`. Enable `geminidataanalytics.
 
 ```bash
 python scripts/provision_brand_data_agent.py --brand Vertx
+python scripts/provision_brand_data_agent.py --brand Thorogood
+python scripts/provision_brand_data_agent.py --account OE
+python scripts/provision_brand_data_agent.py --account Hybrids
 ```
 
-Idempotent. Scopes the agent to the brand’s child / parent / time-series `_90` tables.
+Idempotent. A single `--brand` scopes the agent to that brand’s child / parent / time-series tables. `--account OE` provisions every complete `oe_*` trio and the All-brands parent. Chat with `Thorogood`, `OE`, `OE Vertx`, or `Hybrids` as `brand_identifier`.
 
 ## Endpoints
 

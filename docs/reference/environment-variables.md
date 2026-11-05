@@ -1,6 +1,6 @@
 # Environment Variables
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Complete reference for configuration loaded by `Settings` in `app/config.py`. Values are read from `.env` locally or injected via Cloud Run / Secret Manager in production.
 
@@ -147,6 +147,7 @@ See [AMC Pipeline](/pipelines/amc-pipeline).
 
 | Env var | Default | Description |
 |---------|---------|-------------|
+| `AMC_REPORT_LAG_DAYS` | `7` | Weekly dispatch pulls a week that ended this many days ago |
 | `AMC_POLL_INTERVAL_SECONDS` | `60` | Check-execution spacing |
 | `AMC_CHECK_MAX_ATTEMPTS` | `90` | Max check attempts |
 | `AMC_EXECUTION_TIMEOUT_SECONDS` | `3600` | Execution timeout |
@@ -160,6 +161,22 @@ See [AMC Pipeline](/pipelines/amc-pipeline).
 | `CONVERSATIONAL_ANALYTICS_PILOT_BRAND` | `Vertx` | Default brand for provision script |
 
 Reuses `GCP_PROJECT_ID` and `BIGQUERY_AGG_DATASET`. See [Conversational Analytics](/reference/conversational-analytics).
+
+## Vendor, Brand Analytics ingestion, MCP, pricing
+
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `BIGQUERY_VENDOR_DATASET` | `amz_sp_vendor_reports` | Vendor Central tables and status |
+| `VENDOR_DATA_LAG_DAYS` | `4` | Vendor daily end date is today minus this |
+| `BA_WEEK_REPORT_LAG_DAYS` | `7` | SCP/SQP week lag after Saturday |
+| `BA_REPORT_ACCOUNTS` | `Vertx` | SCP/SQP allowlist |
+| `VERTX_SP_SELLER_ID` | — | Required on Vertx SCP/SQP rows |
+| `BIGQUERY_PRODUCT_PRICING_DATASET` | `product_pricing_v1` | Competitive-summary targets and snapshots |
+| `MCP_HTTP_ENABLED` | `false` | Mount `/mcp` |
+| `MCP_AUTH_TOKEN` | — | Bearer token when HTTP MCP is on |
+| `PIPELINES_API_BASE_URL` | `http://127.0.0.1:8080` | Origin MCP tools call |
+
+See [Vendor Pipeline](/pipelines/vendor-pipeline), [SCP/SQP](/pipelines/ba-scp-sqp), and [MCP](/reference/mcp).
 
 ## Secret Manager
 

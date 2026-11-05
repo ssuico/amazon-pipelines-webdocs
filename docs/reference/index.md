@@ -1,6 +1,6 @@
 # Reference Overview
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 API, schema, and configuration reference for the Amazon Pipelines platform.
 
@@ -17,6 +17,8 @@ API, schema, and configuration reference for the Amazon Pipelines platform.
 | [Brand Analytics](/reference/brand-analytics) | Curated `agg_tables_v2` read API |
 | [Conversational Analytics](/reference/conversational-analytics) | NL chat over agg tables (SSE) |
 | [Listings Health](/reference/listings-health) | Listings Health widget API |
+| [Competitive Landscape](/reference/competitive-landscape) | Monitored ASINs and Featured Offer polling |
+| [MCP Server](/reference/mcp) | Curated agent tools over the HTTP API |
 | [Legacy Migration](/reference/migration-legacy) | Flask → FastAPI endpoint mapping |
 
 ## Live API docs
