@@ -1,6 +1,6 @@
 # Design Decisions
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Architecture decision records (ADRs) for the Amazon Pipelines platform. These are immutable historical records — if a decision is revised, a new entry is created.
 
@@ -20,6 +20,11 @@ Architecture decision records (ADRs) for the Amazon Pipelines platform. These ar
 | 2026-07-18 | [Force Gap-Fill (Remaining Only)](/developer/design-decisions/dispatch-remaining-force) | Accepted |
 | 2026-07-30 | [Remove OE Ads Credentials](/developer/design-decisions/remove-oe-ads) | Accepted |
 | 2026-08-17 | [SP Incremental Dispatch](/developer/design-decisions/sp-incremental-dispatch) | Accepted |
+| 2026-08-26 | [Force Expire Stuck Reports](/developer/design-decisions/force-expire-stuck) | Accepted |
+| 2026-08-26 | [Pipelines MCP Server](/developer/design-decisions/pipelines-mcp) | Accepted |
+| 2026-09-02 | [Cloud Run Warm Instance](/developer/design-decisions/cloud-run-warm-instance) | Accepted |
+| 2026-09-10 | [7-Day Ad Attribution](/developer/design-decisions/ad-attribution-7d) | Accepted |
+| 2026-10-22 | [Vendor Central Retail Analytics](/developer/design-decisions/vendor-retail-analytics) | Accepted |
 
 Original ADR files remain in `amazon-pipelines/design-log/`.
 
