@@ -1,6 +1,6 @@
 # AMC Pipeline (Path to Conversion)
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-11-05
 
 Amazon Marketing Cloud (AMC) pipeline for privacy-controlled advertising analytics. Vertx is the pilot brand. Weekly dispatch runs a two-step AMC SQL workflow and warehouses results in BigQuery.
 
@@ -49,7 +49,8 @@ Successful exploratory downloads are also persisted to `path_to_conversion_campa
 ## Scheduling
 
 - Weekly Cloud Scheduler → `POST /api/v1/amc/dispatch`
-- Default time window: `MOST_RECENT_WEEK`
+- Default lag `AMC_REPORT_LAG_DAYS=7`: `MOST_RECENT_WEEK` resolves to the Monday-aligned week that ended 7 days earlier so conversions can mature. Override with `?lag_days=0` or an explicit window.
+- Blank path rows are dropped before MERGE.
 - Two AMC executions per brand per run (counts against ad-hoc quota)
 
 ## Key endpoints

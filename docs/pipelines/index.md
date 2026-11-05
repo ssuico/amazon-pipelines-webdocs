@@ -1,8 +1,8 @@
 # Data Pipelines Overview
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-11-05
 
-Amazon Pipelines runs three Amazon data surfaces — **SP-API**, **Ads API**, and **AMC** — that share Cloud Run infrastructure but differ in scheduling, fan-out, and processing.
+Amazon Pipelines runs Seller Central **SP-API**, **Ads API**, **AMC**, and Vendor Central retail analytics. They share Cloud Run but differ in scheduling, fan-out, and processing.
 
 ## Pipeline summary
 
@@ -10,7 +10,9 @@ Amazon Pipelines runs three Amazon data surfaces — **SP-API**, **Ads API**, an
 |----------|-------------|------------------|-------|
 | **SP-API** | 7 | 7 Cloud Scheduler jobs (one per report type) | `sp-reports-queue` |
 | **Ads API** | 12 | 1 Cloud Scheduler job + async check chain | `ads-reports-queue` (+ retry / check) |
-| **AMC** | Path to Conversion (weekly) | Weekly Scheduler → async poll | `amc-reports-queue` |
+| **AMC** | Path to Conversion (weekly, D+7 lag) | Weekly Scheduler → async poll | `amc-reports-queue` |
+| **Vendor** | 6 retail analytics reports | `POST /vendor/dispatch` | `sp-reports-queue` (vendor worker) |
+| **SCP / SQP** | Vertx weekly Brand Analytics search reports | `POST /sp/ba/dispatch` | `sp-ba-reports-queue` |
 
 ## Shared processing pattern
 
@@ -47,6 +49,8 @@ Decision tree: [API Endpoints](/reference/endpoints#decision-tree)
 | SP pipeline details | [SP Pipeline](/pipelines/sp-pipeline) |
 | Ads pipeline details | [Ads Pipeline](/pipelines/ads-pipeline) |
 | AMC Path to Conversion | [AMC Pipeline](/pipelines/amc-pipeline) |
+| Vendor Central | [Vendor Pipeline](/pipelines/vendor-pipeline) |
+| Vertx SCP / SQP | [SCP / SQP pilot](/pipelines/ba-scp-sqp) |
 | Worker internals | [Data Flow & Processing](/pipelines/data-flow-processing) |
 | Scheduling | [Batch Scheduling](/pipelines/batch-scheduling) |
 | BigQuery storage | [BigQuery & Datasets](/reference/bigquery) |

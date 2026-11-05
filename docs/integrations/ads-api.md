@@ -1,6 +1,6 @@
 # Amazon Ads API Integration
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 Amazon Ads API integration supports **12 report types** across Sponsored Products (SP), Sponsored Brands (SB), and Sponsored Display (SD), with BigQuery persistence, incremental loading, and Cloud Tasks-based daily dispatch.
 
@@ -99,14 +99,14 @@ Body: `{ "account_name": "Bumbleride", "report_type": "spCampaigns" }`
 Default mode (no date override):
 
 1. Reads max date from target BigQuery table
-2. Starts 3 days before that date (late-arriving data)
+2. Starts **8 days** before that date so 7-day ad attribution can mature
 3. Caps range at 31 days (Ads API limit)
 
 Manual mode: pass `start_date` / `end_date` on dispatch or worker payload.
 
 ## Special handling
 
-**`spAdvertisedProduct`** fetches ENABLED, PAUSED, and ARCHIVED statuses separately and concatenates results before upsert.
+**`spAdvertisedProduct`** fetches ENABLED, PAUSED, and ARCHIVED statuses separately and concatenates results before upsert. OEUS requests full performance columns for this type and for `spSearchTerm`; other OEUS SP types stay metadata-only.
 
 ## BigQuery output
 

@@ -1,6 +1,6 @@
 # Ads Pipeline
 
-**Last updated:** 2026-07-20
+**Last updated:** 2026-11-05
 
 Guide to the Ads API → BigQuery pipeline: dispatch, async workers, incremental loading, and failure recovery.
 
@@ -25,7 +25,7 @@ Diagrams: [Data Flow](/architecture/data-flow)
 1. **Dispatch** — Cloud Scheduler calls `/ads/dispatch` (tasks staggered by `ADS_DISPATCH_STAGGER_SECONDS`)
 2. **Request phase** — worker creates report(s), writes RUNNING, enqueues first check task, returns in seconds
 3. **Check phase** — `/ads/worker/check-report` polls once per invocation; re-enqueues with backoff until COMPLETED / timeout / recreate limit
-4. **Incremental load** — date range resolved up front; default `(last_date - 3 days)` → today (max 31-day window)
+4. **Incremental load** — date range resolved up front; default `(last_date - 8 days)` → today (max 31-day window)
 5. **Transform / upsert** — existing `AdsReportProcessor` + MERGE path
 6. **Track** — `ads_report_status` (COMPLETED with end-to-end duration)
 
@@ -71,7 +71,7 @@ Runs fetch → transform → upsert synchronously. Use for manual runs and debug
 Default mode (no date override):
 
 - Reads max date from target BigQuery table via `get_last_ads_report_date()`
-- Starts 3 days before that date (late-arriving data)
+- Starts **8 days** before that date so 7-day attribution can mature
 - Caps range at 31 days (Ads API limit)
 
 Manual mode: pass `start_date` / `end_date` on dispatch or worker payload.
@@ -79,6 +79,8 @@ Manual mode: pass `start_date` / `end_date` on dispatch or worker payload.
 ## Special handling: spAdvertisedProduct
 
 Creates ENABLED, PAUSED, and ARCHIVED reports together in the request phase; the check chain waits for all three before download/transform.
+
+SP timeseries tables warehouse performance metrics (impressions, clicks, cost, attribution-window sales and purchases). OEUS SP types stay metadata-only except `spSearchTerm` and `spAdvertisedProduct` (full performance columns). Empty-table backfill is `POST /api/v1/ads/backfill`: **89 days** SP and **59 days** SB/SD, chunked at 31 days. Default backfill skips OEUS unless `include_oeus=true`.
 
 ## Scheduling
 
