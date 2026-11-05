@@ -1,6 +1,6 @@
 # Credentials & Authorization
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-11-05
 
 How Amazon Pipelines authenticates with Amazon APIs and manages multi-account credentials.
 
@@ -11,6 +11,7 @@ How Amazon Pipelines authenticates with Amazon APIs and manages multi-account cr
 | **SP-API** | LWA OAuth | Refresh token per brand |
 | **Ads API** | LWA OAuth + profile | Profile ID per brand |
 | **AMC** | LWA OAuth (shared Ads client + AMC refresh token) | Entity / instance / marketplace IDs |
+| **Vendor Central** | Research-app LWA + vendor refresh token | Not listed on seller `/accounts` |
 
 Source of truth: `app/config.py` (`Settings` and `AccountConfig`).
 
